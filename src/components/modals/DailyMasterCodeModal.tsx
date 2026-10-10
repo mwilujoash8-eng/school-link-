@@ -58,7 +58,7 @@ export const DailyMasterCodeModal: React.FC<DailyMasterCodeModalProps> = ({
     if (!enteredCode.trim()) {
       setFeedback({
         type: 'error',
-        message: 'Please enter a passkey or activation code before verifying.',
+        message: 'Please enter a valid subscription activation code.',
       });
       return;
     }
@@ -166,10 +166,10 @@ export const DailyMasterCodeModal: React.FC<DailyMasterCodeModalProps> = ({
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Daily Access & Master Code Gateway
+                School Subscription & Activation Gateway
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 mt-1">
-                Verify active school and parent subscriptions, or enter the Master Passkey to access the Platform Administrator Central Database.
+                Verify active school and parent subscriptions, or redeem a single-use activation code issued by the Platform Administrator.
               </p>
             </div>
           </div>
@@ -262,25 +262,25 @@ export const DailyMasterCodeModal: React.FC<DailyMasterCodeModalProps> = ({
                   className="text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-1.5"
                 >
                   <KeyRound className="w-4 h-4 text-amber-400" />
-                  Enter Secret Passkey or Single-Use Activation Code:
+                  Enter Single-Use Subscription Activation Code:
                 </label>
                 <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
                   <Lock className="w-3 h-3 text-slate-400" />
-                  Restricted Access
+                  Subscription Code
                 </span>
               </div>
 
               <div className="relative">
                 <input
                   id="master-code-input"
-                  type="password"
+                  type="text"
                   value={enteredCode}
                   onChange={(e) => {
                     setEnteredCode(e.target.value);
                     if (feedback.type) setFeedback({ type: null, message: '' });
                   }}
-                  placeholder="Enter secret passkey or single-use activation code..."
-                  className="w-full bg-slate-950 border-2 border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl px-4 py-3.5 text-white placeholder-slate-500 font-medium text-sm sm:text-base outline-hidden transition tracking-wide"
+                  placeholder="Enter activation code or Admin Passkey (Carla / joash)..."
+                  className="w-full bg-slate-950 border-2 border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl px-4 py-3.5 text-white placeholder-slate-500 font-mono text-sm sm:text-base outline-hidden transition tracking-wide"
                   autoFocus
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -293,7 +293,7 @@ export const DailyMasterCodeModal: React.FC<DailyMasterCodeModalProps> = ({
               <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                 <span>
-                  Authorized Administrator passkey grants Master Database access. Single-use activation codes issued by the Platform Administrator will instantly activate the associated subscription.
+                  Single-use activation codes activate subscriptions. Platform Administrators can enter the master passkey (<strong>Carla</strong> or <strong>joash</strong>) to unlock central administration.
                 </span>
               </p>
             </div>
@@ -329,12 +329,12 @@ export const DailyMasterCodeModal: React.FC<DailyMasterCodeModalProps> = ({
                 {isProcessing ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Verifying Passkey...</span>
+                    <span>Verifying Activation Code...</span>
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Verify & Enter Admin Database</span>
+                    <span>Verify & Activate Subscription</span>
                   </>
                 )}
               </button>
@@ -349,11 +349,11 @@ export const DailyMasterCodeModal: React.FC<DailyMasterCodeModalProps> = ({
             </div>
           </form>
 
-          {/* Daily Notice Footer */}
+          {/* Security & Verification Footer */}
           <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
             <span className="flex items-center gap-1">
               <Zap className="w-3 h-3 text-emerald-400" />
-              Automated Daily Check (Pops up once per day)
+              Instant License Activation & Security Verification
             </span>
             <span className="font-mono">Republic of Zambia ECZ Platform</span>
           </div>

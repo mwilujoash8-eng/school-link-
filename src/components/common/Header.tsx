@@ -24,11 +24,11 @@ import {
   Grid,
   Globe,
   Lock,
-  Unlock
+  Unlock,
+  Search
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { UserRole } from '../../types';
-import { AdminAccessModal } from '../modals/AdminAccessModal';
 
 interface HeaderProps {
   onOpenCreateSchool: () => void;
@@ -42,6 +42,7 @@ interface HeaderProps {
   onOpenGoogleMeet?: () => void;
   onOpenSchoolModules?: () => void;
   onViewWebsite?: () => void;
+  onOpenSearch?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -56,6 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenGoogleMeet,
   onOpenSchoolModules,
   onViewWebsite,
+  onOpenSearch,
 }) => {
   const {
     schools,
@@ -80,8 +82,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
-  const [adminAccessModalOpen, setAdminAccessModalOpen] = useState(false);
-  const [targetAdminUser, setTargetAdminUser] = useState<(typeof allUsers)[0] | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -284,8 +284,40 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
+        {/* Center: Futuristic Global Telemetry Search Bar */}
+        {onOpenSearch && (
+          <div className="flex-1 max-w-sm lg:max-w-md mx-3 hidden md:block">
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className="w-full flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-900 border border-slate-700/80 hover:border-cyan-500/50 text-slate-400 hover:text-slate-200 text-xs transition-all shadow-inner group cursor-pointer"
+              title="Search students, faculty, report cards, circulars (⌘K)"
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <Search className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span className="truncate">Search students, teachers, documents...</span>
+              </div>
+              <div className="flex items-center gap-1 font-mono text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md border border-slate-700/80 shrink-0">
+                <span className="text-cyan-400 font-bold">⌘</span>K
+              </div>
+            </button>
+          </div>
+        )}
+
         {/* Right: Quick Role Switcher, School Modules, Notifications & Active User Profile */}
         <div className="flex items-center gap-2.5">
+          {/* Quick Search Button (Mobile / Narrow Screens) */}
+          {onOpenSearch && (
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className="md:hidden flex items-center gap-1.5 p-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-cyan-500/40 text-cyan-300 hover:text-white transition cursor-pointer shadow-xs"
+              title="Quick Search (⌘K)"
+            >
+              <Search className="w-4 h-4 text-cyan-400" />
+            </button>
+          )}
+
           {/* Public School Website Toggle Button */}
           {onViewWebsite && (
             <button
@@ -349,19 +381,6 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline">{isDemoMode ? 'Demo Mode' : 'Live Mode'}</span>
           </button>
 
-          {/* If Admin is Unlocked in Demo Mode, show Lock button */}
-          {isDemoMode && isAdminUnlocked && (
-            <button
-              type="button"
-              onClick={lockAdmin}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition active:scale-95 cursor-pointer"
-              title="Admin access is unlocked. Click to lock Admin Dashboard."
-            >
-              <Unlock className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden lg:inline">Lock Admin</span>
-            </button>
-          )}
-
           {/* Quick Persona Switcher Button OR Locked Role Badge */}
           {isRoleSwitchingAllowed ? (
             <div className="relative">
@@ -391,9 +410,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      {isDemoMode
-                        ? 'Select any role. Note: Admin dashboards require security passkey verification.'
-                        : 'Administrative switchboard: You can inspect any user dashboard.'}
+                      Select any role to view its dedicated dashboard and tools.
                     </p>
                   </div>
 
@@ -401,21 +418,13 @@ export const Header: React.FC<HeaderProps> = ({
                     {schoolUsers.map((user) => {
                       const r = roleLabels[user.role];
                       const isSelected = user.id === currentUser.id;
-                      const isUserAdmin = user.role === 'head_teacher' || user.role === 'platform_admin';
-                      const requiresPasskey = isUserAdmin && isDemoMode && !isAdminUnlocked;
 
                       return (
                         <button
                           key={user.id}
                           onClick={() => {
-                            if (requiresPasskey) {
-                              setTargetAdminUser(user);
-                              setAdminAccessModalOpen(true);
-                              setShowRoleSwitcher(false);
-                            } else {
-                              switchUser(user.id);
-                              setShowRoleSwitcher(false);
-                            }
+                            switchUser(user.id);
+                            setShowRoleSwitcher(false);
                           }}
                           className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 transition cursor-pointer ${
                             isSelected ? 'bg-emerald-50/80 font-semibold' : ''
@@ -433,12 +442,6 @@ export const Header: React.FC<HeaderProps> = ({
                               </span>
                               {user.verificationStatus === 'verified' && (
                                 <UserCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                              )}
-                              {requiresPasskey && (
-                                <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded border border-amber-300 flex items-center gap-1">
-                                  <Lock className="w-2.5 h-2.5" />
-                                  <span>Code</span>
-                                </span>
                               )}
                             </div>
                             <div className="flex items-center gap-2 text-[11px] text-slate-500">
@@ -613,17 +616,6 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Admin Passcode Modal */}
-      <AdminAccessModal
-        isOpen={adminAccessModalOpen}
-        onClose={() => {
-          setAdminAccessModalOpen(false);
-          setTargetAdminUser(null);
-        }}
-        targetRole={targetAdminUser?.role}
-        targetUserId={targetAdminUser?.id}
-      />
     </header>
   );
 };

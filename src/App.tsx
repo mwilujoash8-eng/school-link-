@@ -7,6 +7,9 @@ import { MobileTopBar } from './components/mobile/MobileTopBar';
 import { MobileBottomNav } from './components/mobile/MobileBottomNav';
 import { MobileQuickActionSheet } from './components/mobile/MobileQuickActionSheet';
 import { MobileExcelView } from './components/mobile/MobileExcelView';
+import { AndroidStatusBar } from './components/mobile/AndroidStatusBar';
+import { AndroidGestureBar } from './components/mobile/AndroidGestureBar';
+import { AndroidPhoneShell } from './components/mobile/AndroidPhoneShell';
 import { SchoolPublicWebsite } from './components/website/SchoolPublicWebsite';
 import { LoginPage } from './components/common/LoginPage';
 import { HeadTeacherDashboard } from './components/dashboards/HeadTeacherDashboard';
@@ -16,6 +19,7 @@ import { StudentDashboard } from './components/dashboards/StudentDashboard';
 import { ParentDashboard } from './components/dashboards/ParentDashboard';
 import { BoardDashboard } from './components/dashboards/BoardDashboard';
 import { PlatformAdminDashboard } from './components/dashboards/PlatformAdminDashboard';
+import { AdminPasskeyGate } from './components/common/AdminPasskeyGate';
 import { SchoolCreationModal } from './components/modals/SchoolCreationModal';
 import { UserRegistrationModal } from './components/modals/UserRegistrationModal';
 import { SubscriptionModal } from './components/modals/SubscriptionModal';
@@ -24,7 +28,6 @@ import { AuditLogsModal } from './components/modals/AuditLogsModal';
 import { UserProfileModal } from './components/modals/UserProfileModal';
 import { RoleSelectionModal } from './components/common/RoleSelectionModal';
 import { PendingVerificationScreen } from './components/common/PendingVerificationScreen';
-import { AdminAccessGatekeeper } from './components/common/AdminAccessGatekeeper';
 import { GeminiChatbotStudio } from './components/tools/GeminiChatbotStudio';
 import { DailyMasterCodeModal } from './components/modals/DailyMasterCodeModal';
 import { GoogleClassroomModal } from './components/modals/GoogleClassroomModal';
@@ -32,14 +35,30 @@ import { GoogleMeetModal } from './components/modals/GoogleMeetModal';
 import { SchoolModulesModal } from './components/modals/SchoolModulesModal';
 import { TermReportCard, UserRole } from './types';
 import { Sparkles } from 'lucide-react';
+import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 
 const SchoolLinkAppContent: React.FC = () => {
   const { currentUser, reportCards, isAuthenticated, isDemoMode, isAdminUnlocked } = useSchool();
   const { isSmartphone } = useDevice();
 
   // Website View vs Portal Login View when not authenticated
-  const [showWebsiteLanding, setShowWebsiteLanding] = useState<boolean>(true);
+  const [showWebsiteLanding, setShowWebsiteLanding] = useState<boolean>(!isAuthenticated);
   const [selectedInitialRole, setSelectedInitialRole] = useState<UserRole | undefined>(undefined);
+
+  // Global Quantum Telemetry Search Modal State
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
+
+  // Global Cmd+K / Ctrl+K keyboard shortcut listener
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsGlobalSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Mobile Active Bottom Navigation Tab
   const [mobileTab, setMobileTab] = useState<string>('overview');
@@ -88,8 +107,9 @@ const SchoolLinkAppContent: React.FC = () => {
   // Render Public School Website if active (available to guests and signed-in users)
   if (showWebsiteLanding) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-900 font-sans antialiased">
+      <div className="min-h-screen bg-slate-900 text-slate-900 font-sans antialiased app-scroll-container">
         <DeviceSwitcherBanner />
+        {isSmartphone && <AndroidStatusBar theme="dark" showPinholeCamera={false} />}
         <SchoolPublicWebsite
           onEnterPortal={(role?: UserRole) => {
             if (!isAuthenticated && role) {
@@ -100,6 +120,7 @@ const SchoolLinkAppContent: React.FC = () => {
           onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
           onOpenDailyCode={() => setIsDailyCodeOpen(true)}
         />
+        {isSmartphone && <AndroidGestureBar theme="dark" />}
 
         <SchoolCreationModal
           isOpen={isCreateSchoolOpen}
@@ -118,14 +139,16 @@ const SchoolLinkAppContent: React.FC = () => {
   // If not authenticated and not viewing website, show Login Portal
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-900 font-sans antialiased">
+      <div className="min-h-screen bg-slate-900 text-slate-900 font-sans antialiased app-scroll-container">
         <DeviceSwitcherBanner />
+        {isSmartphone && <AndroidStatusBar theme="dark" showPinholeCamera={false} />}
         <LoginPage
           onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
           onOpenDailyCodeModal={() => setIsDailyCodeOpen(true)}
           onViewWebsite={() => setShowWebsiteLanding(true)}
           initialRole={selectedInitialRole}
         />
+        {isSmartphone && <AndroidGestureBar theme="dark" />}
 
         <SchoolCreationModal
           isOpen={isCreateSchoolOpen}
@@ -149,66 +172,139 @@ const SchoolLinkAppContent: React.FC = () => {
       {/* Universal Device & Viewport Intelligence Bar */}
       <DeviceSwitcherBanner />
 
-      {/* DEDICATED HEADER: SMARTPHONE VS LAPTOP/DESKTOP */}
+      {/* DEDICATED SMARTPHONE APP SHELL VS LAPTOP/DESKTOP WORKSTATION */}
       {isSmartphone ? (
-        <MobileTopBar
-          onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
-          onOpenRegisterUser={() => setIsRegisterUserOpen(true)}
-          onOpenAuditLogs={() => setIsAuditLogsOpen(true)}
-          onOpenRoleSwitcher={() => setIsRoleModalOpen(true)}
-          onOpenProfile={() => setIsProfileOpen(true)}
-          onOpenGeminiAI={() => setIsAiChatbotOpen(true)}
-          onOpenDailyCodeModal={() => setIsDailyCodeOpen(true)}
-          onOpenGoogleMeet={() => setIsGoogleMeetOpen(true)}
-          onOpenSchoolModules={() => setIsSchoolModulesOpen(true)}
-          onViewWebsite={() => setShowWebsiteLanding(true)}
-        />
-      ) : (
-        <Header
-          onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
-          onOpenRegisterUser={() => setIsRegisterUserOpen(true)}
-          onOpenAuditLogs={() => setIsAuditLogsOpen(true)}
-          onOpenRoleSwitcher={() => setIsRoleModalOpen(true)}
-          onOpenProfile={() => setIsProfileOpen(true)}
-          onOpenGeminiAI={() => setIsAiChatbotOpen(true)}
-          onOpenDailyCodeModal={() => setIsDailyCodeOpen(true)}
-          onOpenGoogleClassroom={() => setIsGoogleClassroomOpen(true)}
-          onOpenGoogleMeet={() => setIsGoogleMeetOpen(true)}
-          onOpenSchoolModules={() => setIsSchoolModulesOpen(true)}
-          onViewWebsite={() => setShowWebsiteLanding(true)}
-        />
-      )}
+        <AndroidPhoneShell
+          headerContent={
+            <MobileTopBar
+              onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
+              onOpenRegisterUser={() => setIsRegisterUserOpen(true)}
+              onOpenAuditLogs={() => setIsAuditLogsOpen(true)}
+              onOpenRoleSwitcher={() => setIsRoleModalOpen(true)}
+              onOpenProfile={() => setIsProfileOpen(true)}
+              onOpenGeminiAI={() => setIsAiChatbotOpen(true)}
+              onOpenDailyCodeModal={() => setIsDailyCodeOpen(true)}
+              onOpenGoogleMeet={() => setIsGoogleMeetOpen(true)}
+              onOpenSchoolModules={() => setIsSchoolModulesOpen(true)}
+              onViewWebsite={() => setShowWebsiteLanding(true)}
+              onOpenSearch={() => setIsGlobalSearchOpen(true)}
+            />
+          }
+          footerContent={
+            !isPending ? (
+              <>
+                <MobileBottomNav
+                  activeTab={mobileTab}
+                  onTabChange={(tab) => setMobileTab(tab)}
+                  onOpenQuickAction={() => setIsQuickActionOpen(true)}
+                />
 
-      {/* Main Operating System Canvas */}
-      <main
-        className={`flex-1 w-full mx-auto ${
-          isSmartphone
-            ? 'max-w-xl px-3 sm:px-4 py-3 pb-32'
-            : 'max-w-7xl px-4 sm:px-6 lg:px-8 py-6'
-        }`}
-      >
-        {isPending ? (
-          <PendingVerificationScreen onOpenRoleSwitcher={() => setIsRoleModalOpen(true)} />
-        ) : (
-          <>
-            {/* If Mobile and Excel Studio tab is active */}
-            {isSmartphone && mobileTab === 'excel_studio' ? (
-              <MobileExcelView />
+                <MobileQuickActionSheet
+                  isOpen={isQuickActionOpen}
+                  onClose={() => setIsQuickActionOpen(false)}
+                  onSelectAction={handleQuickAction}
+                />
+              </>
+            ) : null
+          }
+        >
+          <div className="w-full px-2 sm:px-3 py-2 pb-24 app-canvas-texture">
+            {isPending ? (
+              <PendingVerificationScreen onOpenRoleSwitcher={() => setIsRoleModalOpen(true)} />
+            ) : (
+              <>
+                {/* If Mobile and Excel Studio tab is active */}
+                {mobileTab === 'excel_studio' ? (
+                  <MobileExcelView />
+                ) : (
+                  <>
+                    {userRole === 'head_teacher' && (
+                      <HeadTeacherDashboard
+                        onViewReportCard={handleOpenReportCard}
+                        onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
+                        onOpenProfile={() => setIsProfileOpen(true)}
+                      />
+                    )}
+
+                    {userRole === 'deputy_head_teacher' && (
+                      <DeputyHeadDashboard
+                        onViewReportCard={handleOpenReportCard}
+                        onOpenProfile={() => setIsProfileOpen(true)}
+                      />
+                    )}
+
+                    {userRole === 'teacher' && (
+                      <TeacherDashboard
+                        onViewReportCard={handleOpenReportCard}
+                        onOpenProfile={() => setIsProfileOpen(true)}
+                      />
+                    )}
+
+                    {userRole === 'student' && (
+                      <StudentDashboard
+                        onViewReportCard={handleOpenReportCard}
+                        onOpenProfile={() => setIsProfileOpen(true)}
+                      />
+                    )}
+
+                    {userRole === 'parent' && (
+                      <ParentDashboard
+                        onViewReportCard={handleOpenReportCard}
+                        onOpenRegisterUser={() => setIsRegisterUserOpen(true)}
+                        onOpenProfile={() => setIsProfileOpen(true)}
+                      />
+                    )}
+
+                    {userRole === 'school_board' && (
+                      <BoardDashboard onOpenProfile={() => setIsProfileOpen(true)} />
+                    )}
+
+                    {userRole === 'platform_admin' && (
+                      !isAdminUnlocked ? (
+                        <AdminPasskeyGate onOpenRoleSwitcher={() => setIsRoleModalOpen(true)} />
+                      ) : (
+                        <PlatformAdminDashboard
+                          onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
+                          onOpenProfile={() => setIsProfileOpen(true)}
+                          onOpenGoogleMeet={() => setIsGoogleMeetOpen(true)}
+                        />
+                      )
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </AndroidPhoneShell>
+      ) : (
+        <>
+          <Header
+            onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
+            onOpenRegisterUser={() => setIsRegisterUserOpen(true)}
+            onOpenAuditLogs={() => setIsAuditLogsOpen(true)}
+            onOpenRoleSwitcher={() => setIsRoleModalOpen(true)}
+            onOpenProfile={() => setIsProfileOpen(true)}
+            onOpenGeminiAI={() => setIsAiChatbotOpen(true)}
+            onOpenDailyCodeModal={() => setIsDailyCodeOpen(true)}
+            onOpenGoogleClassroom={() => setIsGoogleClassroomOpen(true)}
+            onOpenGoogleMeet={() => setIsGoogleMeetOpen(true)}
+            onOpenSchoolModules={() => setIsSchoolModulesOpen(true)}
+            onViewWebsite={() => setShowWebsiteLanding(true)}
+            onOpenSearch={() => setIsGlobalSearchOpen(true)}
+          />
+
+          {/* Main Operating System Canvas */}
+          <main className="flex-1 w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 app-canvas-texture">
+            {isPending ? (
+              <PendingVerificationScreen onOpenRoleSwitcher={() => setIsRoleModalOpen(true)} />
             ) : (
               <>
                 {userRole === 'head_teacher' && (
-                  isDemoMode && !isAdminUnlocked ? (
-                    <AdminAccessGatekeeper
-                      targetRole="head_teacher"
-                      onUnlockSuccess={() => {}}
-                    />
-                  ) : (
-                    <HeadTeacherDashboard
-                      onViewReportCard={handleOpenReportCard}
-                      onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
-                      onOpenProfile={() => setIsProfileOpen(true)}
-                    />
-                  )
+                  <HeadTeacherDashboard
+                    onViewReportCard={handleOpenReportCard}
+                    onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
+                    onOpenProfile={() => setIsProfileOpen(true)}
+                  />
                 )}
 
                 {userRole === 'deputy_head_teacher' && (
@@ -245,11 +341,8 @@ const SchoolLinkAppContent: React.FC = () => {
                 )}
 
                 {userRole === 'platform_admin' && (
-                  isDemoMode && !isAdminUnlocked ? (
-                    <AdminAccessGatekeeper
-                      targetRole="platform_admin"
-                      onUnlockSuccess={() => {}}
-                    />
+                  !isAdminUnlocked ? (
+                    <AdminPasskeyGate onOpenRoleSwitcher={() => setIsRoleModalOpen(true)} />
                   ) : (
                     <PlatformAdminDashboard
                       onOpenCreateSchool={() => setIsCreateSchoolOpen(true)}
@@ -260,24 +353,7 @@ const SchoolLinkAppContent: React.FC = () => {
                 )}
               </>
             )}
-          </>
-        )}
-      </main>
-
-      {/* DEDICATED SMARTPHONE BOTTOM NAVIGATION & FAB */}
-      {isSmartphone && !isPending && (
-        <>
-          <MobileBottomNav
-            activeTab={mobileTab}
-            onTabChange={(tab) => setMobileTab(tab)}
-            onOpenQuickAction={() => setIsQuickActionOpen(true)}
-          />
-
-          <MobileQuickActionSheet
-            isOpen={isQuickActionOpen}
-            onClose={() => setIsQuickActionOpen(false)}
-            onSelectAction={handleQuickAction}
-          />
+          </main>
         </>
       )}
 
@@ -395,6 +471,13 @@ const SchoolLinkAppContent: React.FC = () => {
         reportCard={activeReportCard}
         isOpen={!!activeReportCard}
         onClose={() => setActiveReportCard(null)}
+      />
+
+      {/* Futuristic Global Telemetry Search Modal */}
+      <GlobalSearchModal
+        isOpen={isGlobalSearchOpen}
+        onClose={() => setIsGlobalSearchOpen(false)}
+        onOpenReportCardModal={handleOpenReportCard}
       />
 
       {/* Gemini AI Multi-Turn Grounded Chatbot Modal */}

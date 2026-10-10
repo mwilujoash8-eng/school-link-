@@ -7,6 +7,7 @@ interface DeviceContextType {
   deviceType: DeviceType;
   effectiveDevice: 'smartphone' | 'desktop';
   isSmartphone: boolean;
+  isAndroidPhone: boolean;
   isTablet: boolean;
   isLaptop: boolean;
   isDesktop: boolean;
@@ -22,14 +23,14 @@ interface DeviceContextType {
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'schoollink_device_mode_override';
+const STORAGE_KEY = 'schoollink_device_mode_android_v1';
 
 export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [screenWidth, setScreenWidth] = useState<number>(
-    typeof window !== 'undefined' ? window.innerWidth : 1200
+    typeof window !== 'undefined' ? window.innerWidth : 412
   );
   const [screenHeight, setScreenHeight] = useState<number>(
-    typeof window !== 'undefined' ? window.innerHeight : 800
+    typeof window !== 'undefined' ? window.innerHeight : 892
   );
   const [isTouch, setIsTouch] = useState<boolean>(false);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
@@ -44,7 +45,8 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // Ignore storage restrictions
       }
     }
-    return 'auto';
+    // Default to Android smartphone design per instructions
+    return 'smartphone';
   });
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   // Effective layout experience taking manual override into account
-  let effectiveDevice: 'smartphone' | 'desktop' = 'desktop';
+  let effectiveDevice: 'smartphone' | 'desktop' = 'smartphone';
   if (deviceMode === 'smartphone') {
     effectiveDevice = 'smartphone';
   } else if (deviceMode === 'desktop') {
@@ -117,14 +119,15 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   const isSmartphone = effectiveDevice === 'smartphone';
+  const isAndroidPhone = isSmartphone;
   const isTablet = detectedType === 'tablet' && deviceMode === 'auto';
   const isLaptop = detectedType === 'laptop' && deviceMode === 'auto';
   const isDesktop = effectiveDevice === 'desktop' && detectedType === 'desktop';
 
   // Human readable detection label
-  let detectedName = 'Desktop PC';
-  if (screenWidth < 768) {
-    detectedName = isTouch ? 'Smartphone (Touch)' : 'Mobile Viewport';
+  let detectedName = 'Android Smartphone';
+  if (isSmartphone) {
+    detectedName = screenWidth < 768 ? 'Android Phone' : 'Android Phone (Simulated)';
   } else if (screenWidth < 1024) {
     detectedName = 'Tablet / iPad';
   } else if (screenWidth < 1440) {
@@ -139,6 +142,7 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         deviceType: detectedType,
         effectiveDevice,
         isSmartphone,
+        isAndroidPhone,
         isTablet,
         isLaptop,
         isDesktop,

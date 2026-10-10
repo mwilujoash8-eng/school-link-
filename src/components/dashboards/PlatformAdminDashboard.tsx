@@ -70,6 +70,7 @@ export const PlatformAdminDashboard: React.FC<PlatformAdminDashboardProps> = ({
     approveUser,
     rejectUser,
     switchSchool,
+    lockAdmin,
   } = useSchool();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'search_people' | 'keys' | 'schools' | 'parents' | 'users' | 'meet' | 'security'>('overview');
@@ -180,6 +181,10 @@ export const PlatformAdminDashboard: React.FC<PlatformAdminDashboardProps> = ({
               <span className="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30">
                 Level 5 Clearance
               </span>
+              <span className="bg-indigo-950/80 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-700/60 flex items-center gap-1.5 font-mono">
+                <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
+                Passkey: Carla | joash
+              </span>
               <span className="text-slate-400 text-xs font-mono">National SchoolLink Mesh</span>
             </div>
 
@@ -229,6 +234,15 @@ export const PlatformAdminDashboard: React.FC<PlatformAdminDashboardProps> = ({
             >
               <Plus className="w-4 h-4" />
               <span>New School</span>
+            </button>
+
+            <button
+              onClick={lockAdmin}
+              className="bg-slate-800 hover:bg-rose-950/80 hover:border-rose-500/50 text-slate-300 hover:text-rose-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition border border-slate-700 cursor-pointer shadow-sm"
+              title="Lock Admin Console (Requires passkey Carla or joash to re-enter)"
+            >
+              <Lock className="w-3.5 h-3.5 text-rose-400" />
+              <span>Lock Console</span>
             </button>
           </div>
         </div>
@@ -1863,6 +1877,37 @@ export const PlatformAdminDashboard: React.FC<PlatformAdminDashboardProps> = ({
       {/* TAB 5: NATIONAL SECURITY & AUDIT LEDGER */}
       {activeTab === 'security' && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+          {/* Admin Passkey Configuration Banner */}
+          <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 border border-indigo-500/30 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-white">Central Admin Passkey Protection</h4>
+                  <span className="text-[10px] bg-emerald-950 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-800 flex items-center gap-1">
+                    <Check className="w-3 h-3 text-emerald-400" /> Active & Guarded
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Authorized Dashboard Passkeys: <strong className="text-indigo-300 font-mono">Carla</strong> and <strong className="text-indigo-300 font-mono">joash</strong> (Level 5 Security Clearance)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={lockAdmin}
+                className="px-3.5 py-2 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>Lock Console Now</span>
+              </button>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">

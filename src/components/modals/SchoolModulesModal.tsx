@@ -211,7 +211,7 @@ export const SchoolModulesModal: React.FC<SchoolModulesModalProps> = ({
       id: 'audit_trail',
       name: 'Audit Trail & Security Ledger',
       category: 'admin',
-      description: 'Immutable cryptographic access log tracking all grade edits, user approvals, and passkey events.',
+      description: 'Immutable cryptographic access log tracking all grade edits, user approvals, and security access events.',
       icon: Shield,
       iconBg: 'bg-slate-500/10 border-slate-500/30',
       iconColor: 'text-slate-600',

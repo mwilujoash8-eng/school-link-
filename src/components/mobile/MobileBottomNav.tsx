@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { UserRole } from '../../types';
+import { AndroidGestureBar } from './AndroidGestureBar';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -82,8 +83,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const rightItems = navItems.slice(2, 4);
 
   return (
-    <nav aria-label="Mobile navigation bar" className="fixed bottom-0 left-0 right-0 z-40 bg-[#1E293B] text-white border-t border-slate-700/80 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-safe">
-      <div className="max-w-md mx-auto px-3 py-1.5 flex items-center justify-between relative">
+    <nav
+      aria-label="Mobile navigation bar"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-[#1E293B]/95 backdrop-blur-xl text-white border-t border-slate-700/80 shadow-[0_-4px_25px_rgba(0,0,0,0.4)] select-none-app pb-safe"
+    >
+      <div className="max-w-md mx-auto px-3 pt-1.5 pb-1 flex items-center justify-between relative">
         {/* Left 2 Items */}
         <div className="flex items-center justify-around flex-1">
           {leftItems.map((item) => {
@@ -93,16 +97,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <button
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
-                className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition relative min-w-[56px] active:scale-95 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all relative min-w-[56px] app-pressable ${
                   isActive
-                    ? 'text-emerald-400 font-bold'
+                    ? 'text-emerald-400 font-bold bg-emerald-950/40 border border-emerald-500/30 shadow-2xs'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <div className="relative">
-                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px] text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]' : 'stroke-2'}`} />
                   {Boolean(item.badge && item.badge > 0) && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center ring-2 ring-[#1E293B]">
+                    <span className="absolute -top-1 -right-1.5 bg-red-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center ring-2 ring-[#1E293B]">
                       {item.badge}
                     </span>
                   )}
@@ -111,21 +115,21 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   {item.label}
                 </span>
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-0.5" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-0.5 shadow-sm shadow-emerald-400/80" />
                 )}
               </button>
             );
           })}
         </div>
 
-        {/* Center Floating Action Button (FAB) */}
+        {/* Center Floating Action Button (FAB) with Tactile Ripple & Elevation */}
         <div className="px-2 -mt-5">
           <button
             onClick={onOpenQuickAction}
-            className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-600/40 border-2 border-[#1E293B] hover:scale-105 active:scale-95 transition"
-            title="Open Quick Actions Menu"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-white flex items-center justify-center shadow-lg shadow-emerald-600/50 border-2 border-[#1E293B] ring-2 ring-emerald-400/30 app-pressable cursor-pointer"
+            title="Open Quick Actions Hub"
           >
-            <Plus className="w-6 h-6 stroke-[3px]" />
+            <Plus className="w-6 h-6 stroke-[3px] drop-shadow-xs" />
           </button>
         </div>
 
@@ -138,16 +142,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <button
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
-                className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition relative min-w-[56px] active:scale-95 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all relative min-w-[56px] app-pressable ${
                   isActive
-                    ? 'text-emerald-400 font-bold'
+                    ? 'text-emerald-400 font-bold bg-emerald-950/40 border border-emerald-500/30 shadow-2xs'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <div className="relative">
-                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px] text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]' : 'stroke-2'}`} />
                   {Boolean(item.badge && item.badge > 0) && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center ring-2 ring-[#1E293B]">
+                    <span className="absolute -top-1 -right-1.5 bg-red-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center ring-2 ring-[#1E293B]">
                       {item.badge}
                     </span>
                   )}
@@ -156,13 +160,17 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   {item.label}
                 </span>
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-0.5" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-0.5 shadow-sm shadow-emerald-400/80" />
                 )}
               </button>
             );
           })}
         </div>
       </div>
+
+      {/* Integrated Android Gesture Navigation Pill */}
+      <AndroidGestureBar theme="dark" />
     </nav>
   );
 };
+

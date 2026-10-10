@@ -15,11 +15,15 @@ import {
   MapPin,
   Check,
   Lock,
-  Unlock
+  Unlock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  AlertCircle
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { UserRole } from '../../types';
-import { AdminAccessModal } from '../modals/AdminAccessModal';
+import { isValidAdminPasskey } from '../../utils/adminSecurity';
 
 interface RoleSelectionModalProps {
   isOpen: boolean;
@@ -44,14 +48,19 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
     isDemoMode,
     setDemoMode,
     isAdminUnlocked,
+    unlockAdminWithCode,
     isRoleSwitchingAllowed,
   } = useSchool();
 
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentUser.role);
   const [schoolSearch, setSchoolSearch] = useState('');
-  const [adminAccessModalOpen, setAdminAccessModalOpen] = useState(false);
-  const [pendingAdminRole, setPendingAdminRole] = useState<UserRole | null>(null);
   const [restrictionNotice, setRestrictionNotice] = useState<string | null>(null);
+
+  // Admin Passkey challenge dialog state
+  const [showAdminPasskeyPrompt, setShowAdminPasskeyPrompt] = useState(false);
+  const [adminPasskeyInput, setAdminPasskeyInput] = useState('');
+  const [adminPasskeyError, setAdminPasskeyError] = useState<string | null>(null);
+  const [showAdminPasskeyText, setShowAdminPasskeyText] = useState(false);
 
   if (!isOpen) return null;
 
@@ -150,18 +159,20 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
   const handleSelectRole = (role: UserRole) => {
     setRestrictionNotice(null);
 
-    // If role switching is not allowed (in live mode and non-admin)
-    if (!isRoleSwitchingAllowed && role !== currentUser.role) {
-      setRestrictionNotice(
-        `Role Switching Locked: In Live Mode, you can only access your assigned dashboard (${currentUser.role.replace('_', ' ')}). Only School Administrators can switch personas.`
-      );
+    // If attempting to switch to platform_admin and user is not already platform_admin
+    if (role === 'platform_admin' && currentUser.role !== 'platform_admin') {
+      setSelectedRole('platform_admin');
+      setShowAdminPasskeyPrompt(true);
+      setAdminPasskeyInput('');
+      setAdminPasskeyError(null);
       return;
     }
 
-    const isTargetAdmin = role === 'head_teacher' || role === 'platform_admin';
-    if (isTargetAdmin && isDemoMode && !isAdminUnlocked) {
-      setPendingAdminRole(role);
-      setAdminAccessModalOpen(true);
+    // If role switching is not allowed (in live mode)
+    if (!isRoleSwitchingAllowed && role !== currentUser.role) {
+      setRestrictionNotice(
+        `Role Selection Locked: In Live Production (${currentSchool.name}), users are strictly locked to authentic verified credentials. To switch personas freely, switch to Demo Mode (Sandbox Simulation).`
+      );
       return;
     }
 
@@ -173,6 +184,26 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
         : allUsers.find((u) => u.role === role && u.schoolId === currentSchool.id);
     if (match) {
       switchUser(match.id);
+    }
+  };
+
+  const handleVerifyAdminPasskey = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!adminPasskeyInput.trim()) {
+      setAdminPasskeyError('Please enter the admin passkey ("Carla" or "joash").');
+      return;
+    }
+
+    if (isValidAdminPasskey(adminPasskeyInput)) {
+      unlockAdminWithCode(adminPasskeyInput);
+      const match = allUsers.find((u) => u.role === 'platform_admin');
+      if (match) {
+        switchUser(match.id);
+      }
+      setShowAdminPasskeyPrompt(false);
+      onClose();
+    } else {
+      setAdminPasskeyError('Invalid Admin Passkey. Access Denied. (Authorized passkeys: Carla or joash)');
     }
   };
 
@@ -288,8 +319,6 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {rolesList.map((role) => {
                 const isSelected = selectedRole === role.id;
-                const isTargetAdmin = role.id === 'head_teacher' || role.id === 'platform_admin';
-                const requiresPasskey = isTargetAdmin && isDemoMode && !isAdminUnlocked;
                 const isLockedInLive = !isRoleSwitchingAllowed && role.id !== currentUser.role;
 
                 return (
@@ -310,12 +339,6 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
                           {role.icon}
                         </div>
                         <div className="flex items-center gap-1">
-                          {requiresPasskey && (
-                            <span className="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
-                              <Lock className="w-2.5 h-2.5 text-amber-400" />
-                              <span>Code</span>
-                            </span>
-                          )}
                           {isLockedInLive && (
                             <span className="text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
                               <Lock className="w-2.5 h-2.5 text-slate-500" />
@@ -462,17 +485,97 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
             Enter Dashboard
           </button>
         </div>
-      </div>
 
-      {/* Admin Passcode Modal */}
-      <AdminAccessModal
-        isOpen={adminAccessModalOpen}
-        onClose={() => {
-          setAdminAccessModalOpen(false);
-          setPendingAdminRole(null);
-        }}
-        targetRole={pendingAdminRole || undefined}
-      />
+        {/* Admin Passkey Verification Overlay */}
+        {showAdminPasskeyPrompt && (
+          <div className="fixed inset-0 z-60 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+            <div className="bg-[#0B1120] border border-indigo-500/50 rounded-3xl max-w-md w-full p-6 text-white shadow-2xl shadow-indigo-950/60 relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAdminPasskeyPrompt(false);
+                  setAdminPasskeyInput('');
+                  setAdminPasskeyError(null);
+                }}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 mb-4">
+                <KeyRound className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <span>Platform Admin Passkey Required</span>
+                <span className="text-[10px] bg-indigo-900/60 text-indigo-300 font-mono px-2 py-0.5 rounded border border-indigo-700/60">
+                  Level 5 Clearance
+                </span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                The National Central Administration Dashboard is protected by a platform passkey. Enter your authorized admin password or passkey to unlock the central console.
+              </p>
+
+              <form onSubmit={handleVerifyAdminPasskey} className="mt-5 space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-indigo-300 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+                    <span>Admin Security Passkey</span>
+                    <span className="text-[10px] text-slate-500 font-normal">Authorized: Carla or joash</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showAdminPasskeyText ? 'text' : 'password'}
+                      autoFocus
+                      placeholder="Enter passkey (Carla or joash)"
+                      value={adminPasskeyInput}
+                      onChange={(e) => {
+                        setAdminPasskeyInput(e.target.value);
+                        setAdminPasskeyError(null);
+                      }}
+                      className="w-full bg-slate-950 border border-indigo-500/40 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none pr-10 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminPasskeyText(!showAdminPasskeyText)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                    >
+                      {showAdminPasskeyText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {adminPasskeyError && (
+                  <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2 animate-in fade-in">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span>{adminPasskeyError}</span>
+                  </div>
+                )}
+
+                <div className="pt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAdminPasskeyPrompt(false);
+                      setAdminPasskeyInput('');
+                      setAdminPasskeyError(null);
+                    }}
+                    className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5"
+                  >
+                    <Unlock className="w-4 h-4" />
+                    <span>Unlock Dashboard</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { PaymentChannel, ParentFeeStatement } from '../../types';
+import { getPaymentWindowStatus } from '../../utils/paymentWindow';
 
 interface ParentFeePaymentPortalProps {
   studentNumber: string;
@@ -30,6 +31,7 @@ export const ParentFeePaymentPortal: React.FC<ParentFeePaymentPortalProps> = ({
   className,
 }) => {
   const { currentSchool, parentFeeStatements, makeFeePayment } = useSchool();
+  const paymentWindow = getPaymentWindowStatus();
 
   // Selected statement or fallback
   const statement: ParentFeeStatement = parentFeeStatements[studentNumber] || {
@@ -379,6 +381,46 @@ Thank you for your payment. Please retain for your records.`;
               <p className="text-xs text-slate-500">
                 Official integrations with MTN MoMo, Airtel Money, and Zanaco SchoolPay Bill Payment.
               </p>
+            </div>
+
+            {/* Weekend Clearance Protocol Notice */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950/80 to-slate-900 border border-indigo-500/30 rounded-2xl p-4 text-xs shadow-md text-white">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-indigo-500/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
+                    <Clock className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-400 font-bold block">
+                      Mandatory Payment Clearance Policy
+                    </span>
+                    <span className="font-bold text-white text-xs">
+                      All Fee Payments Must Be Completed on Weekends (3:00 PM – 7:30 PM CAT)
+                    </span>
+                  </div>
+                </div>
+
+                {paymentWindow.isWindowOpen ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[11px] font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>GATEWAY ACTIVE ({paymentWindow.timeRemainingText})</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[11px] font-bold">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span>WEEKEND CLEARANCE ONLY</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 text-slate-300 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <p>
+                  Official payment submissions are strictly processed on <strong>Saturday & Sunday between 15:00 and 19:30 CAT</strong> for ECZ financial compliance.
+                </p>
+                <span className="text-cyan-300 font-mono text-[10px] shrink-0 font-semibold bg-indigo-900/60 px-2 py-0.5 rounded border border-indigo-700/50">
+                  {paymentWindow.nextWindowText}
+                </span>
+              </div>
             </div>
 
             {/* PAYMENT CHANNEL SELECTOR */}

@@ -24,6 +24,7 @@ import {
   ParentSubscriptionTier,
   SubscriptionPaymentMethod
 } from '../../types';
+import { getPaymentWindowStatus } from '../../utils/paymentWindow';
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   onClose,
   defaultMode = 'school'
 }) => {
+  const paymentWindow = getPaymentWindowStatus();
   const {
     currentSchool,
     currentUser,
@@ -389,6 +391,46 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             </div>
           ) : activeTab === 'school' ? (
             <div className="space-y-6">
+              {/* Futuristic Weekend Clearance Protocol Banner */}
+              <div className="bg-gradient-to-r from-slate-900 via-indigo-950/80 to-slate-900 border border-indigo-500/30 rounded-2xl p-4 text-xs shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-indigo-500/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300">
+                      <Clock className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-400 font-bold block">
+                        Official Payment Clearance Protocol
+                      </span>
+                      <span className="font-bold text-white text-xs">
+                        Weekend Payment Clearance Schedule: Saturday & Sunday • 3:00 PM – 7:30 PM CAT
+                      </span>
+                    </div>
+                  </div>
+
+                  {paymentWindow.isWindowOpen ? (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[11px] font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span>GATEWAY OPEN ({paymentWindow.timeRemainingText})</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[11px] font-bold">
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      <span>WEEKEND CLEARANCE ONLY</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-slate-300 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <p>
+                    <strong className="text-white">Mandatory Payment Requirement:</strong> All subscription fee payments must be conducted strictly on weekends from <strong>3:00 PM to 7:30 PM CAT (15:00 – 19:30)</strong>.
+                  </p>
+                  <span className="text-cyan-300 font-mono text-[10px] shrink-0 font-semibold bg-indigo-900/60 px-2 py-0.5 rounded border border-indigo-700/50">
+                    {paymentWindow.nextWindowText}
+                  </span>
+                </div>
+              </div>
+
               {/* School Banner Notice */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-start gap-3">
                 <Building className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
@@ -680,6 +722,46 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Futuristic Weekend Clearance Protocol Banner */}
+              <div className="bg-gradient-to-r from-slate-900 via-teal-950/80 to-slate-900 border border-teal-500/30 rounded-2xl p-4 text-xs shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-teal-500/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-300">
+                      <Clock className="w-4 h-4 text-teal-400" />
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-teal-400 font-bold block">
+                        Official Payment Clearance Protocol
+                      </span>
+                      <span className="font-bold text-white text-xs">
+                        Weekend Payment Clearance Schedule: Saturday & Sunday • 3:00 PM – 7:30 PM CAT
+                      </span>
+                    </div>
+                  </div>
+
+                  {paymentWindow.isWindowOpen ? (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[11px] font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span>GATEWAY OPEN ({paymentWindow.timeRemainingText})</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[11px] font-bold">
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      <span>WEEKEND CLEARANCE ONLY</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-slate-300 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <p>
+                    <strong className="text-white">Mandatory Payment Requirement:</strong> All parent subscription fee payments must be processed strictly on weekends from <strong>3:00 PM to 7:30 PM CAT (15:00 – 19:30)</strong>.
+                  </p>
+                  <span className="text-teal-300 font-mono text-[10px] shrink-0 font-semibold bg-teal-900/60 px-2 py-0.5 rounded border border-teal-700/50">
+                    {paymentWindow.nextWindowText}
+                  </span>
+                </div>
+              </div>
+
               {/* Parent Banner Notice */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-start gap-3">
                 <Users className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />

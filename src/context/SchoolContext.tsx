@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   School,
   User,
@@ -71,13 +71,23 @@ import {
   INITIAL_CANTEEN_WALLETS,
   INITIAL_ACTIVATION_KEYS,
   INITIAL_SUBSCRIPTION_REQUESTS,
-  ECZ_GRADING_SCALE
+  ECZ_GRADING_SCALE,
+  REAL_SCHOOLS,
+  REAL_USERS,
+  REAL_ANNOUNCEMENTS,
+  REAL_AUDIT_LOGS,
+  DEMO_SCHOOL,
+  DEMO_USERS,
+  DEMO_ANNOUNCEMENTS,
+  DEMO_REPORT_CARDS,
+  DEMO_ASSESSMENTS
 } from '../mockData';
 import {
   getZambianCalendarInfo,
   autoSynchronizeSchoolWithZambianCalendar,
   getZambianTermsForYear
 } from '../utils/zambianCalendar';
+import { isValidAdminPasskey } from '../utils/adminSecurity';
 
 interface SchoolContextType {
   schools: School[];
@@ -108,6 +118,7 @@ interface SchoolContextType {
   isAdminUnlocked: boolean;
   unlockAdminWithCode: (code: string) => { success: boolean; message: string };
   lockAdmin: () => void;
+  verifyAdminPasskey: (passkey: string) => boolean;
   isRoleSwitchingAllowed: boolean;
   
   // Actions
@@ -298,50 +309,6 @@ function safeSave(key: string, value: any): void {
 }
 
 export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [schools, setSchools] = useState<School[]>(() => safeLoad(STORAGE_KEYS.SCHOOLS, INITIAL_SCHOOLS));
-  const [allUsers, setAllUsers] = useState<User[]>(() => safeLoad(STORAGE_KEYS.USERS, INITIAL_USERS));
-  const [currentSchoolId, setCurrentSchoolId] = useState<string>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.CURRENT_SCHOOL_ID) || 'school_kabwe_tech';
-    } catch {
-      return 'school_kabwe_tech';
-    }
-  });
-
-  const [currentUserId, setCurrentUserId] = useState<string>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID) || 'user_head_banda';
-    } catch {
-      return 'user_head_banda';
-    }
-  });
-
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => safeLoad(STORAGE_KEYS.IS_AUTH, true));
-  const [assessments, setAssessments] = useState<AssessmentRecord[]>(() => safeLoad(STORAGE_KEYS.ASSESSMENTS, INITIAL_ASSESSMENTS));
-  const [reportCards, setReportCards] = useState<TermReportCard[]>(() => safeLoad(STORAGE_KEYS.REPORT_CARDS, INITIAL_REPORT_CARDS));
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(() => safeLoad(STORAGE_KEYS.ATTENDANCE, INITIAL_ATTENDANCE));
-  const [assignments, setAssignments] = useState<Assignment[]>(() => safeLoad(STORAGE_KEYS.ASSIGNMENTS, INITIAL_ASSIGNMENTS));
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => safeLoad(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS));
-  const [ptaRecords, setPtaRecords] = useState<PTARecord[]>(() => safeLoad(STORAGE_KEYS.PTA, INITIAL_PTA_RECORDS));
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => safeLoad(STORAGE_KEYS.AUDIT, INITIAL_AUDIT_LOGS));
-  const [zoomMeetings, setZoomMeetings] = useState<ZoomMeeting[]>(() => safeLoad(STORAGE_KEYS.ZOOM_MEETINGS, INITIAL_ZOOM_MEETINGS));
-  const [directMessages, setDirectMessages] = useState<DirectMessage[]>(() => safeLoad(STORAGE_KEYS.MESSAGES, INITIAL_DIRECT_MESSAGES));
-  const [teacherDutyLogs, setTeacherDutyLogs] = useState<TeacherDailyDutyLog[]>(() => safeLoad(STORAGE_KEYS.TEACHER_DUTY_LOGS, INITIAL_TEACHER_DUTY_LOGS));
-  const [stories, setStories] = useState<StoryItem[]>(() => safeLoad(STORAGE_KEYS.STORIES, INITIAL_STORIES));
-  const [groups, setGroups] = useState<SchoolGroup[]>(() => safeLoad(STORAGE_KEYS.GROUPS, INITIAL_GROUPS));
-  const [groupPosts, setGroupPosts] = useState<GroupPost[]>(() => safeLoad(STORAGE_KEYS.GROUP_POSTS, INITIAL_GROUP_POSTS));
-  const [financePublications, setFinancePublications] = useState<FinancePublication[]>(() => safeLoad(STORAGE_KEYS.FINANCE_PUBS, INITIAL_FINANCE_PUBLICATIONS));
-  const [parentFeeStatements, setParentFeeStatements] = useState<Record<string, ParentFeeStatement>>(() => safeLoad(STORAGE_KEYS.PARENT_FEES, INITIAL_PARENT_FEE_STATEMENTS));
-  const [busTrackers, setBusTrackers] = useState<BusRouteTracker[]>(() => safeLoad(STORAGE_KEYS.BUS_TRACKERS, INITIAL_BUS_TRACKERS));
-  const [guardianPasses, setGuardianPasses] = useState<Record<string, GuardianPickupPass>>(() => safeLoad(STORAGE_KEYS.GUARDIAN_PASSES, INITIAL_GUARDIAN_PASSES));
-  const [behaviorLogs, setBehaviorLogs] = useState<StudentBehaviorLog[]>(() => safeLoad(STORAGE_KEYS.BEHAVIOR_LOGS, INITIAL_BEHAVIOR_LOGS));
-  const [conferences, setConferences] = useState<ParentTeacherConference[]>(() => safeLoad(STORAGE_KEYS.CONFERENCES, INITIAL_CONFERENCES));
-  const [permissionSlips, setPermissionSlips] = useState<PermissionSlip[]>(() => safeLoad(STORAGE_KEYS.PERMISSION_SLIPS, INITIAL_PERMISSION_SLIPS));
-  const [clinicVisits, setClinicVisits] = useState<HealthClinicVisit[]>(() => safeLoad(STORAGE_KEYS.CLINIC_VISITS, INITIAL_CLINIC_VISITS));
-  const [canteenWallets, setCanteenWallets] = useState<Record<string, CanteenWallet>>(() => safeLoad(STORAGE_KEYS.CANTEEN_WALLETS, INITIAL_CANTEEN_WALLETS));
-  const [activationKeys, setActivationKeys] = useState<SubscriptionActivationKey[]>(() => safeLoad(STORAGE_KEYS.ACTIVATION_KEYS, INITIAL_ACTIVATION_KEYS));
-  const [pendingSubRequests, setPendingSubRequests] = useState<PendingSubscriptionRequest[]>(() => safeLoad(STORAGE_KEYS.SUB_REQUESTS, INITIAL_SUBSCRIPTION_REQUESTS));
-
   // Demo Mode and Admin Security Access
   const [isDemoMode, setIsDemoMode] = useState<boolean>(() => {
     try {
@@ -364,13 +331,279 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   });
 
+  // --- LIVE PRODUCTION DATA (Real Schools, Zero Fake Data) ---
+  const [liveSchools, setLiveSchools] = useState<School[]>(() =>
+    safeLoad('schoollink_live_schools_v5', REAL_SCHOOLS).filter(
+      (s) => s.id !== 'school_demo' && !s.name.includes('Sandbox Demo')
+    )
+  );
+  const [liveUsers, setLiveUsers] = useState<User[]>(() =>
+    safeLoad('schoollink_live_users_v5', REAL_USERS).filter((u) => u.schoolId !== 'school_demo')
+  );
+  const [liveCurrentSchoolId, setLiveCurrentSchoolId] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('schoollink_live_school_id_v5');
+      if (saved && saved !== 'school_demo') return saved;
+      return 'school_kabwe_tech';
+    } catch {
+      return 'school_kabwe_tech';
+    }
+  });
+  const [liveCurrentUserId, setLiveCurrentUserId] = useState<string>(() => {
+    try {
+      return localStorage.getItem('schoollink_live_user_id_v5') || 'user_live_head_banda';
+    } catch {
+      return 'user_live_head_banda';
+    }
+  });
+  const [liveAssessments, setLiveAssessments] = useState<AssessmentRecord[]>(() =>
+    safeLoad('schoollink_live_assessments_v5', [])
+  );
+  const [liveReportCards, setLiveReportCards] = useState<TermReportCard[]>(() =>
+    safeLoad('schoollink_live_report_cards_v5', [])
+  );
+  const [liveAttendanceRecords, setLiveAttendanceRecords] = useState<AttendanceRecord[]>(() =>
+    safeLoad('schoollink_live_attendance_v5', [])
+  );
+  const [liveAssignments, setLiveAssignments] = useState<Assignment[]>(() =>
+    safeLoad('schoollink_live_assignments_v5', [])
+  );
+  const [liveAnnouncements, setLiveAnnouncements] = useState<Announcement[]>(() =>
+    safeLoad('schoollink_live_announcements_v5', REAL_ANNOUNCEMENTS)
+  );
+  const [livePtaRecords, setLivePtaRecords] = useState<PTARecord[]>(() =>
+    safeLoad('schoollink_live_pta_v5', [])
+  );
+  const [liveAuditLogs, setLiveAuditLogs] = useState<AuditLog[]>(() =>
+    safeLoad('schoollink_live_audit_v5', REAL_AUDIT_LOGS)
+  );
+  const [liveParentFeeStatements, setLiveParentFeeStatements] = useState<Record<string, ParentFeeStatement>>(() =>
+    safeLoad('schoollink_live_parent_fees_v5', {})
+  );
+  const [liveFinancePublications, setLiveFinancePublications] = useState<FinancePublication[]>(() =>
+    safeLoad('schoollink_live_finance_pubs_v5', [])
+  );
+
+  // --- DEMO ENVIRONMENT (Completely Simulated Fake Sandbox School & Persona Data) ---
+  const [demoSchools, setDemoSchools] = useState<School[]>(() =>
+    safeLoad('schoollink_demo_schools_v6', [DEMO_SCHOOL])
+  );
+  const [demoUsers, setDemoUsers] = useState<User[]>(() =>
+    safeLoad('schoollink_demo_users_v6', DEMO_USERS)
+  );
+  const [demoCurrentSchoolId, setDemoCurrentSchoolId] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('schoollink_demo_school_id_v6');
+      if (saved) return saved;
+      return 'school_demo';
+    } catch {
+      return 'school_demo';
+    }
+  });
+  const [demoCurrentUserId, setDemoCurrentUserId] = useState<string>(() => {
+    try {
+      return localStorage.getItem('schoollink_demo_user_id_v6') || 'user_demo_head_mumba';
+    } catch {
+      return 'user_demo_head_mumba';
+    }
+  });
+  const [demoAssessments, setDemoAssessments] = useState<AssessmentRecord[]>(() =>
+    safeLoad('schoollink_demo_assessments_v6', DEMO_ASSESSMENTS)
+  );
+  const [demoReportCards, setDemoReportCards] = useState<TermReportCard[]>(() =>
+    safeLoad('schoollink_demo_report_cards_v6', DEMO_REPORT_CARDS)
+  );
+  const [demoAttendanceRecords, setDemoAttendanceRecords] = useState<AttendanceRecord[]>(() =>
+    safeLoad('schoollink_demo_attendance_v6', INITIAL_ATTENDANCE.map(att => ({ ...att, schoolId: 'school_demo' })))
+  );
+  const [demoAssignments, setDemoAssignments] = useState<Assignment[]>(() =>
+    safeLoad('schoollink_demo_assignments_v6', INITIAL_ASSIGNMENTS.map(asg => ({ ...asg, schoolId: 'school_demo' })))
+  );
+  const [demoAnnouncements, setDemoAnnouncements] = useState<Announcement[]>(() =>
+    safeLoad('schoollink_demo_announcements_v6', DEMO_ANNOUNCEMENTS)
+  );
+  const [demoPtaRecords, setDemoPtaRecords] = useState<PTARecord[]>(() =>
+    safeLoad('schoollink_demo_pta_v6', INITIAL_PTA_RECORDS.map(pta => ({ ...pta, schoolId: 'school_demo' })))
+  );
+  const [demoAuditLogs, setDemoAuditLogs] = useState<AuditLog[]>(() =>
+    safeLoad('schoollink_demo_audit_v6', [
+      {
+        id: 'log_demo_sandbox_init',
+        schoolId: 'school_demo',
+        timestamp: new Date().toISOString(),
+        userId: 'user_demo_head_mumba',
+        userName: 'Dr. Chanda Mumba (Demo)',
+        userRole: 'head_teacher',
+        action: 'SANDBOX_SIMULATION_ACTIVE',
+        details: 'Demo Mode sandbox active. Multi-role testing and persona switching enabled.',
+        ipAddress: '10.0.0.1',
+      }
+    ])
+  );
+  const [demoParentFeeStatements, setDemoParentFeeStatements] = useState<Record<string, ParentFeeStatement>>(() =>
+    safeLoad('schoollink_demo_parent_fees_v6', INITIAL_PARENT_FEE_STATEMENTS)
+  );
+  const [demoFinancePublications, setDemoFinancePublications] = useState<FinancePublication[]>(() =>
+    safeLoad('schoollink_demo_finance_pubs_v6', INITIAL_FINANCE_PUBLICATIONS.map(pub => ({ ...pub, schoolId: 'school_demo' })))
+  );
+
+  // Common shared state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => safeLoad(STORAGE_KEYS.IS_AUTH, true));
+  const [zoomMeetings, setZoomMeetings] = useState<ZoomMeeting[]>(() => safeLoad(STORAGE_KEYS.ZOOM_MEETINGS, INITIAL_ZOOM_MEETINGS));
+  const [directMessages, setDirectMessages] = useState<DirectMessage[]>(() => safeLoad(STORAGE_KEYS.MESSAGES, INITIAL_DIRECT_MESSAGES));
+  const [teacherDutyLogs, setTeacherDutyLogs] = useState<TeacherDailyDutyLog[]>(() => safeLoad(STORAGE_KEYS.TEACHER_DUTY_LOGS, INITIAL_TEACHER_DUTY_LOGS));
+  const [stories, setStories] = useState<StoryItem[]>(() => safeLoad(STORAGE_KEYS.STORIES, INITIAL_STORIES));
+  const [groups, setGroups] = useState<SchoolGroup[]>(() => safeLoad(STORAGE_KEYS.GROUPS, INITIAL_GROUPS));
+  const [groupPosts, setGroupPosts] = useState<GroupPost[]>(() => safeLoad(STORAGE_KEYS.GROUP_POSTS, INITIAL_GROUP_POSTS));
+  const [busTrackers, setBusTrackers] = useState<BusRouteTracker[]>(() => safeLoad(STORAGE_KEYS.BUS_TRACKERS, INITIAL_BUS_TRACKERS));
+  const [guardianPasses, setGuardianPasses] = useState<Record<string, GuardianPickupPass>>(() => safeLoad(STORAGE_KEYS.GUARDIAN_PASSES, INITIAL_GUARDIAN_PASSES));
+  const [behaviorLogs, setBehaviorLogs] = useState<StudentBehaviorLog[]>(() => safeLoad(STORAGE_KEYS.BEHAVIOR_LOGS, INITIAL_BEHAVIOR_LOGS));
+  const [conferences, setConferences] = useState<ParentTeacherConference[]>(() => safeLoad(STORAGE_KEYS.CONFERENCES, INITIAL_CONFERENCES));
+  const [permissionSlips, setPermissionSlips] = useState<PermissionSlip[]>(() => safeLoad(STORAGE_KEYS.PERMISSION_SLIPS, INITIAL_PERMISSION_SLIPS));
+  const [clinicVisits, setClinicVisits] = useState<HealthClinicVisit[]>(() => safeLoad(STORAGE_KEYS.CLINIC_VISITS, INITIAL_CLINIC_VISITS));
+  const [canteenWallets, setCanteenWallets] = useState<Record<string, CanteenWallet>>(() => safeLoad(STORAGE_KEYS.CANTEEN_WALLETS, INITIAL_CANTEEN_WALLETS));
+  const [activationKeys, setActivationKeys] = useState<SubscriptionActivationKey[]>(() => safeLoad(STORAGE_KEYS.ACTIVATION_KEYS, INITIAL_ACTIVATION_KEYS));
+  const [pendingSubRequests, setPendingSubRequests] = useState<PendingSubscriptionRequest[]>(() => safeLoad(STORAGE_KEYS.SUB_REQUESTS, INITIAL_SUBSCRIPTION_REQUESTS));
+
+  // Dynamic context values based on active mode
+  const schools = useMemo(() => {
+    if (isDemoMode) {
+      return demoSchools;
+    }
+    // Live mode strictly real registered schools, zero fake schools!
+    return liveSchools.filter((s) => s.id !== 'school_demo' && !s.name.includes('Sandbox Demo'));
+  }, [isDemoMode, demoSchools, liveSchools]);
+
+  const allUsers = useMemo(() => {
+    if (isDemoMode) {
+      return demoUsers;
+    }
+    // Live mode strictly real registered users, NO fake students or parents!
+    return liveUsers.filter((u) => u.schoolId !== 'school_demo');
+  }, [isDemoMode, demoUsers, liveUsers]);
+
+  const currentSchoolId = isDemoMode ? demoCurrentSchoolId : liveCurrentSchoolId;
+  const currentUserId = isDemoMode ? demoCurrentUserId : liveCurrentUserId;
+
+  const assessments = isDemoMode ? demoAssessments : liveAssessments;
+  const reportCards = isDemoMode ? demoReportCards : liveReportCards;
+  const attendanceRecords = isDemoMode ? demoAttendanceRecords : liveAttendanceRecords;
+  const assignments = isDemoMode ? demoAssignments : liveAssignments;
+  const announcements = isDemoMode ? demoAnnouncements : liveAnnouncements;
+  const ptaRecords = isDemoMode ? demoPtaRecords : livePtaRecords;
+  const auditLogs = isDemoMode ? demoAuditLogs : liveAuditLogs;
+  const parentFeeStatements = isDemoMode ? demoParentFeeStatements : liveParentFeeStatements;
+  const financePublications = isDemoMode ? demoFinancePublications : liveFinancePublications;
+
+  // Active mode state setters
+  const setSchools: React.Dispatch<React.SetStateAction<School[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoSchools(updater);
+    } else {
+      setLiveSchools(updater);
+    }
+  };
+
+  const setAllUsers: React.Dispatch<React.SetStateAction<User[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoUsers(updater);
+    } else {
+      setLiveUsers(updater);
+    }
+  };
+
+  const setAssessments: React.Dispatch<React.SetStateAction<AssessmentRecord[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoAssessments(updater);
+    } else {
+      setLiveAssessments(updater);
+    }
+  };
+
+  const setReportCards: React.Dispatch<React.SetStateAction<TermReportCard[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoReportCards(updater);
+    } else {
+      setLiveReportCards(updater);
+    }
+  };
+
+  const setAttendanceRecords: React.Dispatch<React.SetStateAction<AttendanceRecord[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoAttendanceRecords(updater);
+    } else {
+      setLiveAttendanceRecords(updater);
+    }
+  };
+
+  const setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoAssignments(updater);
+    } else {
+      setLiveAssignments(updater);
+    }
+  };
+
+  const setAnnouncements: React.Dispatch<React.SetStateAction<Announcement[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoAnnouncements(updater);
+    } else {
+      setLiveAnnouncements(updater);
+    }
+  };
+
+  const setPtaRecords: React.Dispatch<React.SetStateAction<PTARecord[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoPtaRecords(updater);
+    } else {
+      setLivePtaRecords(updater);
+    }
+  };
+
+  const setAuditLogs: React.Dispatch<React.SetStateAction<AuditLog[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoAuditLogs(updater);
+    } else {
+      setLiveAuditLogs(updater);
+    }
+  };
+
+  const setParentFeeStatements: React.Dispatch<React.SetStateAction<Record<string, ParentFeeStatement>>> = (updater) => {
+    if (isDemoMode) {
+      setDemoParentFeeStatements(updater);
+    } else {
+      setLiveParentFeeStatements(updater);
+    }
+  };
+
+  const setFinancePublications: React.Dispatch<React.SetStateAction<FinancePublication[]>> = (updater) => {
+    if (isDemoMode) {
+      setDemoFinancePublications(updater);
+    } else {
+      setLiveFinancePublications(updater);
+    }
+  };
+
+  const setCurrentSchoolId: React.Dispatch<React.SetStateAction<string>> = (updater) => {
+    if (isDemoMode) {
+      setDemoCurrentSchoolId(updater);
+    } else {
+      setLiveCurrentSchoolId(updater);
+    }
+  };
+
+  const setCurrentUserId: React.Dispatch<React.SetStateAction<string>> = (updater) => {
+    if (isDemoMode) {
+      setDemoCurrentUserId(updater);
+    } else {
+      setLiveCurrentUserId(updater);
+    }
+  };
+
+  // Admin Security Access - Protected by Master Passkey "Carla" and "joash"
   const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(() => {
     try {
-      if (typeof window !== 'undefined') {
-        const saved = sessionStorage.getItem('schoollink_admin_unlocked');
-        return saved === 'true';
-      }
-      return false;
+      return localStorage.getItem('schoollink_admin_unlocked_v2') === 'true';
     } catch {
       return false;
     }
@@ -381,57 +614,43 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       localStorage.setItem('schoollink_demo_mode_v1', enabled ? 'true' : 'false');
     } catch {}
+    if (enabled) {
+      setDemoCurrentSchoolId('school_demo');
+      setDemoCurrentUserId('user_demo_head_mumba');
+    } else {
+      setLiveCurrentSchoolId('school_kabwe_tech');
+      setLiveCurrentUserId('user_live_head_banda');
+    }
   };
 
-  const unlockAdminWithCode = (code: string): { success: boolean; message: string } => {
-    const clean = code.trim().toLowerCase().replace(/\s+/g, ' ');
-    const isMasterCode =
-      clean === '5 april 2013' ||
-      clean === '05 april 2013' ||
-      clean === '5th april 2013' ||
-      clean === '5th of april 2013' ||
-      clean === '5-04-2013' ||
-      clean === '05-04-2013' ||
-      clean === '5/4/2013' ||
-      clean === '05/04/2013' ||
-      clean === '2013-04-05' ||
-      clean === '5 april, 2013';
-
-    const cleanRaw = code.trim().toUpperCase();
-    const targetSchool = schools.find((s) => s.id === currentSchoolId) || schools[0];
-    const isStaffPass = Boolean(targetSchool?.staffPassword && cleanRaw === targetSchool.staffPassword.toUpperCase());
-    const isAdminCode = cleanRaw === 'ADMIN-2026' || cleanRaw === 'STAFF-2026' || cleanRaw === 'ECZ-2026';
-    const isActivationKey = activationKeys.some(
-      (k) => k.code.trim().toUpperCase() === cleanRaw && k.status === 'active_unused'
-    );
-
-    if (isMasterCode || isStaffPass || isAdminCode || isActivationKey) {
-      setIsAdminUnlocked(true);
-      try {
-        sessionStorage.setItem('schoollink_admin_unlocked', 'true');
-      } catch {}
-      addAuditLog(
-        'ADMIN_DASHBOARD_UNLOCKED',
-        `Admin dashboard unlocked in Demo Mode using authorized security passkey verification.`
-      );
+  const unlockAdminWithCode = (code?: string): { success: boolean; message: string } => {
+    if (!code || !isValidAdminPasskey(code)) {
       return {
-        success: true,
-        message: 'Security Passkey Accepted! Administrator dashboard unlocked.',
+        success: false,
+        message: 'Invalid Admin Passkey. Please enter authorized passkey ("Carla" or "joash").',
       };
     }
-
+    setIsAdminUnlocked(true);
+    try {
+      localStorage.setItem('schoollink_admin_unlocked_v2', 'true');
+    } catch {}
+    addAuditLog('SUPER_ADMIN_AUTH', `Platform Administrator console unlocked with passkey verification.`);
     return {
-      success: false,
-      message: 'Invalid passkey. Access to Administrator dashboard is restricted in Demo Mode.',
+      success: true,
+      message: 'Admin passkey verified! Platform Administrator Dashboard is unlocked.',
     };
   };
 
   const lockAdmin = () => {
     setIsAdminUnlocked(false);
     try {
-      sessionStorage.removeItem('schoollink_admin_unlocked');
+      localStorage.removeItem('schoollink_admin_unlocked_v2');
     } catch {}
-    addAuditLog('ADMIN_DASHBOARD_LOCKED', 'Administrator dashboard access locked.');
+    addAuditLog('SUPER_ADMIN_LOCKED', `Platform Administrator manually locked the central console.`);
+  };
+
+  const verifyAdminPasskey = (passkey: string): boolean => {
+    return isValidAdminPasskey(passkey);
   };
 
   // Real-time Zambian Academic Calendar Computation Engine
@@ -672,13 +891,21 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }): { success: boolean; message?: string; user?: User } => {
     // Special handling for platform admin
     if (role === 'platform_admin') {
+      // Validate password if supplied
+      if (password && !isValidAdminPasskey(password) && password !== 'Carla' && password !== 'joash' && password !== 'password123') {
+        return {
+          success: false,
+          message: 'Invalid Admin Password or Passkey. Please enter authorized passkey ("Carla" or "joash").',
+        };
+      }
+
       let adminUser = allUsers.find((u) => u.role === 'platform_admin');
       if (!adminUser) {
         adminUser = {
           id: 'user_platform_admin',
           fullName: fullName?.trim() || 'Mwilu Joash',
           email: emailOrId?.trim() || 'mwilujoash8@gmail.com',
-          password: password || 'password123',
+          password: 'Carla',
           role: 'platform_admin',
           userCategory: 'platform_admin',
           phone: phone?.trim() || '+260 977 100001',
@@ -700,7 +927,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setAllUsers((prev) => [adminUser!, ...prev]);
       }
       setCurrentUserId(adminUser.id);
+      setIsAdminUnlocked(true);
       setIsAuthenticated(true);
+      try {
+        localStorage.setItem('schoollink_admin_unlocked_v2', 'true');
+      } catch {}
       addAuditLog('SUPER_ADMIN_AUTH', `Platform Administrator ${adminUser.fullName} (mwilujoash8@gmail.com) authenticated into Central Master Database console.`);
       return { success: true, user: adminUser };
     }
@@ -981,29 +1212,15 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     user?: User;
     actionType?: 'admin_login' | 'subscription_activated';
   } => {
-    const clean = passkey.trim().toLowerCase().replace(/\s+/g, ' ');
-
-    // Secret Master Passkey "5 April 2013" (and normalized date variations) for Platform Administrator Console access
-    const isMasterCode =
-      clean === '5 april 2013' ||
-      clean === '05 april 2013' ||
-      clean === '5th april 2013' ||
-      clean === '5th of april 2013' ||
-      clean === '5-04-2013' ||
-      clean === '05-04-2013' ||
-      clean === '5/4/2013' ||
-      clean === '05/04/2013' ||
-      clean === '2013-04-05' ||
-      clean === '5 april, 2013';
-
-    if (isMasterCode) {
-      let adminUser = allUsers.find((u) => u.role === 'platform_admin' || u.email === 'mwilujoash8@gmail.com');
+    // 1. Check if input matches Platform Admin master passkey ("Carla" or "joash")
+    if (isValidAdminPasskey(passkey)) {
+      let adminUser = allUsers.find((u) => u.role === 'platform_admin');
       if (!adminUser) {
         adminUser = {
           id: 'user_platform_admin',
           fullName: 'Mwilu Joash',
           email: 'mwilujoash8@gmail.com',
-          password: 'password123',
+          password: 'Carla',
           role: 'platform_admin',
           userCategory: 'platform_admin',
           phone: '+260 977 100001',
@@ -1024,23 +1241,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         };
         setAllUsers((prev) => [adminUser!, ...prev]);
       }
-
       setCurrentUserId(adminUser.id);
+      setIsAdminUnlocked(true);
       setIsAuthenticated(true);
+      try {
+        localStorage.setItem('schoollink_admin_unlocked_v2', 'true');
+      } catch {}
       addAuditLog(
-        'MASTER_CODE_ACCESS',
-        `Platform Administrator authenticated via Master Security Passkey into Central Master Database console.`
+        'SUPER_ADMIN_AUTH',
+        `Platform Administrator verified using passkey "${passkey.trim()}". Central Admin Console unlocked.`
       );
-
       return {
         success: true,
-        message: 'Master Passkey Accepted! Access granted to the Master Platform Admin Database.',
+        message: 'Platform Administrator Master Passkey Verified! Central Admin Console Unlocked.',
         user: adminUser,
         actionType: 'admin_login',
       };
     }
 
-    // Check if input is a valid database-issued activation key
+    // 2. Check if input is a valid database-issued activation key
     const formattedCode = passkey.trim().toUpperCase();
     const foundKey = activationKeys.find(
       (k) => k.code.trim().toUpperCase() === formattedCode
@@ -2731,7 +2950,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isAdminUnlocked,
         unlockAdminWithCode,
         lockAdmin,
-        isRoleSwitchingAllowed: isDemoMode || currentUser?.role === 'head_teacher' || currentUser?.role === 'platform_admin',
+        verifyAdminPasskey,
+        isRoleSwitchingAllowed: isDemoMode,
         login,
         authenticateWithMasterPasskey,
         generateActivationKey,

@@ -157,26 +157,26 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-slate-300">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
+            <div className="hidden xs:flex items-center gap-1 text-slate-300">
               <Phone className="w-3.5 h-3.5 text-emerald-400" />
               <span>+260 775 777069</span>
             </div>
-            <span className="text-slate-700">|</span>
+            <span className="hidden xs:inline text-slate-700">|</span>
             {onOpenDailyCode && (
               <button
                 type="button"
                 onClick={onOpenDailyCode}
                 className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 underline cursor-pointer"
               >
-                National Passkey Portal
+                Passkey Portal
               </button>
             )}
             <span className="text-slate-700">|</span>
             <button
               type="button"
               onClick={() => onEnterPortal()}
-              className="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-2.5 py-0.5 rounded-full transition cursor-pointer"
+              className="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded-full transition cursor-pointer shadow-xs active:scale-95"
             >
               {isAuthenticated ? 'Go to My Dashboard' : 'Portal Login'}
             </button>
@@ -324,7 +324,7 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                 </h1>
 
                 <p className="text-base sm:text-lg text-slate-300 leading-relaxed mb-8">
-                  Nurturing intellectual curiosity, scientific discipline, and high ethical character under the Examinations Council of Zambia (ECZ) syllabus. Empowered by full continuous assessment, live Zoom virtual classrooms, and comprehensive parent-school communication.
+                  Nurturing intellectual curiosity, scientific discipline, and high ethical character under the Examinations Council of Zambia (ECZ) syllabus. Empowered by full continuous assessment, embedded Google Meet virtual classrooms, and comprehensive parent-school communication.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4">
@@ -405,7 +405,7 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                   tag: 'E-Learning & Homework',
                   icon: BookOpen,
                   color: 'from-emerald-600 to-teal-600',
-                  features: ['Interactive Homework & Quiz Submissions', 'Zoom Live Classrooms with Blackboard', 'Smart Study Notes Maker (ECZ)', 'Official Term Digital Report Cards'],
+                  features: ['Interactive Homework & Quiz Submissions', 'Google Meet Live Classrooms with Blackboard', 'Smart Study Notes Maker (ECZ)', 'Official Term Digital Report Cards'],
                 },
                 {
                   role: 'parent' as UserRole,

@@ -22,12 +22,12 @@ import {
   Lock,
   Unlock,
   Menu,
-  X
+  X,
+  Search
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { useDevice } from '../../context/DeviceContext';
 import { UserRole } from '../../types';
-import { AdminAccessModal } from '../modals/AdminAccessModal';
 
 interface MobileTopBarProps {
   onOpenCreateSchool: () => void;
@@ -40,6 +40,7 @@ interface MobileTopBarProps {
   onOpenGoogleMeet?: () => void;
   onOpenSchoolModules?: () => void;
   onViewWebsite?: () => void;
+  onOpenSearch?: () => void;
 }
 
 export const MobileTopBar: React.FC<MobileTopBarProps> = ({
@@ -53,6 +54,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
   onOpenGoogleMeet,
   onOpenSchoolModules,
   onViewWebsite,
+  onOpenSearch,
 }) => {
   const {
     currentSchool,
@@ -79,8 +81,6 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
   const [showRoleSheet, setShowRoleSheet] = useState(false);
   const [showNotificationSheet, setShowNotificationSheet] = useState(false);
   const [showMenuSheet, setShowMenuSheet] = useState(false);
-  const [adminAccessModalOpen, setAdminAccessModalOpen] = useState(false);
-  const [targetAdminUser, setTargetAdminUser] = useState<(typeof allUsers)[0] | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -98,15 +98,15 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#1E293B] text-white border-b border-slate-700/80 shadow-md">
-        {/* SchoolLink Mobile Web Portal Top Bar - Clean Non-Overlapping Header */}
-        <div className="px-3 py-2 flex items-center justify-between gap-2">
+      <header className="sticky top-0 z-40 bg-[#1E293B]/95 backdrop-blur-md text-white border-b border-slate-700/80 shadow-md select-none-app">
+        {/* SchoolLink Mobile Web Portal Top Bar - Clean Non-Overlapping Header with App Texture */}
+        <div className="max-w-xl mx-auto px-3 py-2 flex items-center justify-between gap-2">
           {/* Left: School Selector with Logo */}
           <button
             onClick={() => setShowSchoolSheet(true)}
-            className="flex items-center gap-2 text-left min-w-0 flex-1 group active:opacity-80 cursor-pointer"
+            className="flex items-center gap-2 text-left min-w-0 flex-1 group app-pressable cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center font-bold text-sm text-white shrink-0 overflow-hidden shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center font-bold text-sm text-white shrink-0 overflow-hidden shadow-xs ring-1 ring-white/20">
               {currentSchool.logo ? (
                 <img
                   src={currentSchool.logo}
@@ -137,7 +137,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
             {isRoleSwitchingAllowed ? (
               <button
                 onClick={() => setShowRoleSheet(true)}
-                className={`px-2 py-1 rounded-lg text-[10px] font-bold border flex items-center gap-1 transition active:scale-95 cursor-pointer ${roleMeta[currentUser.role].bg}`}
+                className={`px-2 py-1 rounded-lg text-[10px] font-bold border flex items-center gap-1 app-pressable cursor-pointer ${roleMeta[currentUser.role].bg}`}
                 title="Tap to switch persona"
               >
                 {roleMeta[currentUser.role].icon}
@@ -154,15 +154,27 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
               </div>
             )}
 
+            {/* Global Search Button */}
+            {onOpenSearch && (
+              <button
+                type="button"
+                onClick={onOpenSearch}
+                className="p-1.5 rounded-lg bg-slate-800/90 text-cyan-300 hover:text-white border border-cyan-500/30 app-pressable cursor-pointer shadow-xs"
+                title="Global Search (⌘K)"
+              >
+                <Search className="w-4 h-4 text-cyan-400" />
+              </button>
+            )}
+
             {/* Notification Bell */}
             <button
               onClick={() => setShowNotificationSheet(true)}
-              className="relative p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 active:scale-95 cursor-pointer"
+              className="relative p-1.5 rounded-lg bg-slate-800/90 text-slate-300 hover:text-white border border-slate-700/80 app-pressable cursor-pointer"
               title="Notifications"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-slate-900">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-slate-900 shadow-xs">
                   {unreadCount}
                 </span>
               )}
@@ -172,7 +184,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
             <button
               type="button"
               onClick={() => setShowMenuSheet(true)}
-              className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/40 active:scale-95 cursor-pointer shadow-xs"
+              className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/40 app-pressable cursor-pointer shadow-xs"
               title="Open Navigation Menu"
             >
               <Menu className="w-4 h-4" />
@@ -181,12 +193,24 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
         </div>
 
         {/* Quick Action Pill Strip - Horizontal Scrolling, Guaranteed No Overlapping */}
-        <div className="px-3 py-1.5 bg-slate-900/70 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="bg-slate-900/80 border-t border-slate-800/80 backdrop-blur-xs">
+          <div className="max-w-xl mx-auto px-3 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {onOpenSearch && (
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 border border-cyan-500/40 text-[11px] font-semibold app-pressable cursor-pointer shadow-xs"
+            >
+              <Search className="w-3 h-3 text-cyan-400" />
+              <span>Search</span>
+            </button>
+          )}
+
           {onViewWebsite && (
             <button
               type="button"
               onClick={onViewWebsite}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-teal-300 border border-slate-700 text-[11px] font-semibold active:scale-95 transition cursor-pointer"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-teal-300 border border-slate-700 text-[11px] font-semibold app-pressable cursor-pointer"
             >
               <Globe className="w-3 h-3 text-teal-400" />
               <span>Website</span>
@@ -197,7 +221,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
             <button
               type="button"
               onClick={onOpenSchoolModules}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-[11px] font-semibold active:scale-95 transition cursor-pointer"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-[11px] font-semibold app-pressable cursor-pointer"
             >
               <Grid className="w-3 h-3 text-emerald-400" />
               <span>Modules</span>
@@ -208,7 +232,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
             <button
               type="button"
               onClick={onOpenGoogleMeet}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-[11px] font-semibold active:scale-95 transition cursor-pointer"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-[11px] font-semibold app-pressable cursor-pointer"
             >
               <Video className="w-3 h-3 text-emerald-400" />
               <span>Meet</span>
@@ -251,6 +275,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
               <span>Profile</span>
             </button>
           )}
+          </div>
         </div>
       </header>
 
@@ -348,21 +373,13 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
               {schoolUsers.map((u) => {
                 const r = roleMeta[u.role];
                 const isSelected = u.id === currentUser.id;
-                const isUserAdmin = u.role === 'head_teacher' || u.role === 'platform_admin';
-                const requiresPasskey = isUserAdmin && isDemoMode && !isAdminUnlocked;
 
                 return (
                   <button
                     key={u.id}
                     onClick={() => {
-                      if (requiresPasskey) {
-                        setTargetAdminUser(u);
-                        setAdminAccessModalOpen(true);
-                        setShowRoleSheet(false);
-                      } else {
-                        switchUser(u.id);
-                        setShowRoleSheet(false);
-                      }
+                      switchUser(u.id);
+                      setShowRoleSheet(false);
                     }}
                     className={`w-full text-left py-3 px-2 flex items-center gap-3 rounded-xl transition cursor-pointer ${
                       isSelected ? 'bg-emerald-50/80 font-bold' : 'hover:bg-slate-50'
@@ -380,12 +397,6 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
                         </span>
                         {u.verificationStatus === 'verified' && (
                           <UserCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        )}
-                        {requiresPasskey && (
-                          <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded border border-amber-300 flex items-center gap-1">
-                            <Lock className="w-2.5 h-2.5" />
-                            <span>Code</span>
-                          </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
@@ -539,6 +550,25 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
 
             {/* Menu Items Grid */}
             <div className="grid grid-cols-1 gap-2 my-3.5">
+              {onOpenSearch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMenuSheet(false);
+                    onOpenSearch();
+                  }}
+                  className="w-full text-left p-3 rounded-2xl bg-cyan-950/40 hover:bg-cyan-900/40 border border-cyan-500/40 flex items-center gap-3 transition cursor-pointer"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-cyan-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-white">Quantum Telemetry Search</p>
+                    <p className="text-[11px] text-slate-400">Quickly find students, teachers, circulars & reports</p>
+                  </div>
+                </button>
+              )}
+
               {onViewWebsite && (
                 <button
                   type="button"
@@ -628,8 +658,8 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
                     <KeyRound className="w-4 h-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-900">Daily Passkey & Master Security</p>
-                    <p className="text-[11px] text-slate-500">Universal master passkey: 5 April 2013</p>
+                    <p className="text-xs font-bold text-slate-900">Subscription & Activation Gateway</p>
+                    <p className="text-[11px] text-slate-500">Manage school licenses & activation codes</p>
                   </div>
                 </button>
               )}
@@ -720,17 +750,6 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
           </div>
         </div>
       )}
-
-      {/* Admin Access Passcode Modal */}
-      <AdminAccessModal
-        isOpen={adminAccessModalOpen}
-        onClose={() => {
-          setAdminAccessModalOpen(false);
-          setTargetAdminUser(null);
-        }}
-        targetRole={targetAdminUser?.role}
-        targetUserId={targetAdminUser?.id}
-      />
     </>
   );
 };

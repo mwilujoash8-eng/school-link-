@@ -9,15 +9,48 @@ body {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
-/* Prevent iOS Safari from auto-zooming into inputs/selects on focus on mobile devices */
+/* Native App Touch & Interaction Texture */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+.app-touch-target {
+  -webkit-tap-highlight-color: transparent !important;
+  touch-action: manipulation;
+}
+
+/* Inhibit text selection on native app chrome & buttons to feel like an installed application */
+button,
+nav,
+header,
+.select-none-app,
+[role="tab"],
+[role="button"] {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Prevent mobile browsers from auto-zooming into inputs/selects on focus */
 @media screen and (max-width: 768px) {
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
     font-size: 16px !important;
   }
+}
+
+/* Smooth momentum scrolling for native mobile app feel */
+.app-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
 }
 
 /* Utility to hide scrollbars while preserving scrolling */
@@ -35,4 +68,47 @@ body {
 }
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Tactile Mobile App Textures & Surfaces */
+.app-canvas-texture {
+  background-color: #f1f5f9;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.22) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+.app-dark-canvas-texture {
+  background-color: #0b1329;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+/* Tactile physical card elevation with subtle edge highlights */
+.app-card-tactile {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.12s ease;
+}
+
+.app-card-tactile:active {
+  transform: scale(0.985);
+}
+
+/* Tactile button press feedback */
+.app-pressable {
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), filter 0.12s ease;
+}
+
+.app-pressable:active {
+  transform: scale(0.96);
+  filter: brightness(0.96);
+}
+
+/* Frosted glass bar texture */
+.app-frosted-bar {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }

@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { UserRole, UserCategory, ParentSubscriptionTier } from '../../types';
+import { isValidAdminPasskey } from '../../utils/adminSecurity';
 
 interface LoginPageProps {
   onOpenCreateSchool: () => void;
@@ -236,23 +237,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     const effectiveWhatsApp = sameAsPhone ? phone.trim() : whatsAppNumber.trim();
 
-    // Check if user entered the master passkey "5 April 2013" in password or ID
-    const trimmedPass = password.trim().toLowerCase();
-    const trimmedId = emailOrId.trim().toLowerCase();
-    if (
-      trimmedPass === '5 april 2013' ||
-      trimmedPass === '05 april 2013' ||
-      trimmedPass === '5/4/2013' ||
-      trimmedPass === '05/04/2013' ||
-      trimmedPass === '5-4-2013' ||
-      trimmedPass === '05-04-2013' ||
-      trimmedId === '5 april 2013' ||
-      trimmedId === '05 april 2013'
-    ) {
-      const passResult = authenticateWithMasterPasskey('5 April 2013');
-      setIsSubmitting(false);
-      if (passResult.success) {
-        setSuccessMessage(passResult.message);
+    if (selectedCategory === 'platform_admin' || effectiveRole === 'platform_admin') {
+      if (password.trim() && !isValidAdminPasskey(password) && password.trim() !== 'Carla' && password.trim() !== 'joash' && password.trim() !== 'password123') {
+        setIsSubmitting(false);
+        setErrorMessage('Invalid Admin Passkey or Password. Authorized passkeys: "Carla" or "joash".');
         return;
       }
     }
@@ -605,7 +593,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         {/* Right 7 Cols: Authentication Form */}
         <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
           {/* Mode Switcher: Sign In vs Register */}
-          <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6">
+          <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6 gap-1">
             <button
               type="button"
               onClick={() => {
@@ -613,14 +601,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 setErrorMessage(null);
                 setSuccessMessage(null);
               }}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 authMode === 'signin'
                   ? 'bg-slate-800 text-white shadow-sm border border-slate-700'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <KeyRound className="w-4 h-4 text-emerald-400" />
-              <span>Sign In with Existing Account</span>
+              <KeyRound className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="truncate">Sign In<span className="hidden sm:inline"> Account</span></span>
             </button>
 
             <button
@@ -630,14 +618,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 setErrorMessage(null);
                 setSuccessMessage(null);
               }}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 authMode === 'register'
                   ? 'bg-slate-800 text-white shadow-sm border border-slate-700'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Users className="w-4 h-4 text-teal-400" />
-              <span>Create New User Profile</span>
+              <Users className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+              <span className="truncate">Register<span className="hidden sm:inline"> New User</span></span>
             </button>
           </div>
 
@@ -873,7 +861,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   className="w-full bg-slate-950 border border-amber-500/40 rounded-xl px-3.5 py-2 text-xs font-mono text-white placeholder:text-slate-600 focus:ring-2 focus:ring-amber-500 outline-none"
                 />
                 <p className="text-[10px] text-amber-200/80">
-                  Default Staff Access Code for demo: <span className="font-mono font-bold text-white">{targetSchool.staffPassword || 'STAFF-2026'}</span>
+                  School Staff Verification Code: <span className="font-mono font-bold text-white">{targetSchool.staffPassword || 'STAFF-2026'}</span>
                 </p>
               </div>
             )}
@@ -881,8 +869,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Account Password
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  {selectedCategory === 'platform_admin' && <Shield className="w-3.5 h-3.5 text-indigo-400" />}
+                  <span>{selectedCategory === 'platform_admin' ? 'Admin Master Passkey / Password' : 'Account Password'}</span>
                 </label>
                 <button
                   type="button"
@@ -896,11 +885,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder="Enter password"
+                placeholder={selectedCategory === 'platform_admin' ? 'Enter admin passkey (Carla or joash)' : 'Enter password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none"
+                className={`w-full bg-slate-950 border rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-600 outline-none ${
+                  selectedCategory === 'platform_admin'
+                    ? 'border-indigo-500/50 focus:ring-2 focus:ring-indigo-500 font-mono'
+                    : 'border-slate-700 focus:ring-2 focus:ring-emerald-500'
+                }`}
               />
+              {selectedCategory === 'platform_admin' && (
+                <p className="text-[10px] text-indigo-300/80 mt-1 flex items-center gap-1.5">
+                  <KeyRound className="w-3 h-3 text-indigo-400" />
+                  <span>Authorized Central Passkeys: <strong className="text-white font-mono">Carla</strong> or <strong className="text-white font-mono">joash</strong></span>
+                </p>
+              )}
             </div>
 
             {/* Messages */}
