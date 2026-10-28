@@ -39,8 +39,9 @@ jobs:
 
       - name: Build project
         run: |
-          npx vite build --base="${{ steps.pages.outputs.base_path || './' }}"
+          npx vite build --base="./"
           touch dist/.nojekyll
+          cp dist/index.html dist/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
