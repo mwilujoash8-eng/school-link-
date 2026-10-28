@@ -108,14 +108,14 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 bg-[#1E293B] text-white border-b border-slate-700 shadow-md">
       {/* Top status & system bar */}
       <div className="bg-[#0F172A] text-slate-300 text-xs px-4 sm:px-8 py-1.5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border border-emerald-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            ACTIVE SESSION
-          </span>
-          <span className="text-slate-300 text-xs font-medium">
-            Academic Year {currentSchool.academicYear} &bull; Term 1 (13 Weeks) &bull; ECZ Standards
-          </span>
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="text-emerald-400 font-semibold tracking-wide uppercase text-[11px]">SchoolLink OS</span>
+          <span aria-hidden="true" className="text-slate-700">·</span>
+          <span>Academic Year {currentSchool.academicYear}</span>
+          <span aria-hidden="true" className="text-slate-700">·</span>
+          <span>Term 1</span>
+          <span aria-hidden="true" className="text-slate-700">·</span>
+          <span className="text-slate-300">ECZ Standards Certified</span>
         </div>
 
         <div className="flex items-center gap-3">

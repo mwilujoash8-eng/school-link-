@@ -303,27 +303,38 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
       {/* 3. HERO BANNER SECTION */}
       {activeNav === 'home' && (
         <>
-          <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white py-16 sm:py-24 px-4 sm:px-6">
-            {/* Background Decorative Rings */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-            <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+          <section className="relative overflow-hidden bg-[#0b0f19] text-white py-20 sm:py-28 px-4 sm:px-6">
+            {/* Cinematic Campus Backdrop Image with Gradient Scrim */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <img
+                src="/src/assets/images/hero_school_campus_1793163940057.jpg"
+                alt="SchoolLink Academy Modern Campus"
+                className="w-full h-full object-cover object-center opacity-30 scale-105 filter brightness-90 contrast-105"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-[#0b0f19]/80 to-[#0b0f19]/40" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0b0f19] via-[#0b0f19]/85 to-transparent" />
+            </div>
 
             <div className="max-w-7xl mx-auto relative z-10">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>2026 Academic Year • Enrollments & Admissions Open</span>
+                {/* Clean unboxed metadata kicker */}
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wider uppercase text-emerald-400 mb-6">
+                  <span>2026 Academic Session</span>
+                  <span aria-hidden="true" className="text-slate-600">·</span>
+                  <span>ECZ Examination Center #{currentSchool.code}</span>
+                  <span aria-hidden="true" className="text-slate-600">·</span>
+                  <span className="text-teal-300">Enrollments Open</span>
                 </div>
 
-                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6" style={{ textWrap: 'balance' }}>
                   Excellence in Zambian & Global Education at{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
                     {currentSchool.name}
                   </span>
                 </h1>
 
-                <p className="text-base sm:text-lg text-slate-300 leading-relaxed mb-8">
+                <p className="text-base sm:text-lg text-slate-300 leading-relaxed mb-8 max-w-2xl">
                   Nurturing intellectual curiosity, scientific discipline, and high ethical character under the Examinations Council of Zambia (ECZ) syllabus. Empowered by full continuous assessment, embedded Google Meet virtual classrooms, and comprehensive parent-school communication.
                 </p>
 
@@ -331,7 +342,7 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                   <button
                     type="button"
                     onClick={() => onEnterPortal()}
-                    className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 transition active:scale-95 flex items-center gap-2"
+                    className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 transition active:scale-95 flex items-center gap-2 cursor-pointer"
                   >
                     <span>{isAuthenticated ? 'Enter School Portal' : 'Access School Portal'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -340,7 +351,7 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveNav('admissions')}
-                    className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600 rounded-xl text-sm font-bold transition active:scale-95 flex items-center gap-2"
+                    className="px-6 py-3.5 bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700/80 hover:border-slate-600 rounded-xl text-sm font-bold transition active:scale-95 flex items-center gap-2 cursor-pointer"
                   >
                     <BookOpen className="w-4 h-4 text-emerald-400" />
                     <span>Apply for Admission</span>
@@ -349,7 +360,7 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveNav('academics')}
-                    className="px-4 py-3.5 text-slate-400 hover:text-white text-sm font-semibold transition flex items-center gap-1"
+                    className="px-4 py-3.5 text-slate-400 hover:text-white text-sm font-semibold transition flex items-center gap-1 cursor-pointer"
                   >
                     <span>Explore ECZ Curriculum</span>
                     <ChevronRight className="w-4 h-4" />
@@ -357,16 +368,16 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                 </div>
               </div>
 
-              {/* Stats Strip */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-16 pt-8 border-t border-slate-800">
+              {/* Stats Strip with Tabular Numerals */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-16 pt-8 border-t border-slate-800/80">
                 {[
                   { label: 'ECZ Examination Pass Rate', val: '99.4%', sub: 'Distinction & Merit Grade 7, 9 & 12' },
                   { label: 'Enrolled Learners', val: '1,450+', sub: 'Primary, Junior & Senior Secondary' },
                   { label: 'Certified Educators', val: '88', sub: 'Subject Specialists & Lecturers' },
                   { label: 'Interactive Digital Tools', val: '13', sub: 'Spreadsheet, Word, Zoom & AI Co-Teacher' },
                 ].map((stat, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-                    <div className="text-2xl sm:text-3xl font-black text-emerald-400 mb-1">{stat.val}</div>
+                  <div key={idx} className="p-4 rounded-2xl bg-slate-900/60 backdrop-blur-xs border border-slate-800/80 hover:border-emerald-500/40 transition">
+                    <div className="text-2xl sm:text-3xl font-black text-emerald-400 mb-1 tabular-nums font-mono">{stat.val}</div>
                     <div className="text-xs font-bold text-white">{stat.label}</div>
                     <div className="text-[11px] text-slate-400 mt-0.5">{stat.sub}</div>
                   </div>
@@ -903,19 +914,88 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
         </section>
       )}
 
-      {/* CAMPUS LIFE VIEW */}
+      {/* CAMPUS LIFE & FACILITIES VIEW */}
       {activeNav === 'campus' && (
         <section className="py-12 px-4 sm:px-6 max-w-7xl mx-auto w-full flex-1">
-          <div className="mb-8">
-            <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest bg-emerald-100 px-3 py-1 rounded-full">
-              Holistic Student Life
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">
-              Campus Life, Sports & Innovation Clubs
+          <div className="mb-10">
+            <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">
+              <span>Holistic Student Environment</span>
+              <span aria-hidden="true" className="text-slate-400">·</span>
+              <span>World-Class Infrastructure</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Campus Facilities & Student Societies
             </h1>
-            <p className="text-sm text-slate-600 mt-2 max-w-3xl">
-              Education at {currentSchool.name} extends beyond the classroom into athletics, cultural performance, debate, science fairs, and community leadership.
+            <p className="text-sm text-slate-600 mt-2 max-w-3xl leading-relaxed">
+              Education at {currentSchool.name} combines cutting-edge STEM laboratories, peaceful academic research commons, athletic excellence, and rich cultural traditions.
             </p>
+          </div>
+
+          {/* Featured Facilities Photographic Showcase */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-md transition">
+              <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                <img
+                  src="/src/assets/images/digital_stem_lab_1793163940627.jpg"
+                  alt="Modern Digital STEM & Computer Laboratory"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+                    Science & Technology Wing
+                  </div>
+                  <h3 className="text-lg font-bold">Advanced Digital STEM & Robotics Laboratory</h3>
+                </div>
+              </div>
+              <div className="p-6">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                  Fully equipped with modern workstations, micro-controllers, physics sensors, and cloud programming environments designed for the Zambian ECZ secondary curriculum and international competitions.
+                </p>
+                <div className="flex items-center gap-3 text-xs text-slate-500 font-medium pt-3 border-t border-slate-100">
+                  <span>60 Workstations</span>
+                  <span aria-hidden="true">·</span>
+                  <span>Fiber Optic 1Gbps</span>
+                  <span aria-hidden="true">·</span>
+                  <span>Robotics & 3D Prototyping</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-md transition">
+              <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                <img
+                  src="/src/assets/images/library_study_hub_1793163940471.jpg"
+                  alt="Academic Research Library and Media Hub"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+                    Academic Research Center
+                  </div>
+                  <h3 className="text-lg font-bold">Modern Library & Digital Media Commons</h3>
+                </div>
+              </div>
+              <div className="p-6">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                  A serene, natural-light study haven housing over 15,000 reference volumes, past ECZ examination archives, digital eBook terminals, and quiet collaborative group research pods.
+                </p>
+                <div className="flex items-center gap-3 text-xs text-slate-500 font-medium pt-3 border-t border-slate-100">
+                  <span>15,000+ Print Volumes</span>
+                  <span aria-hidden="true">·</span>
+                  <span>ECZ Past Paper Archive</span>
+                  <span aria-hidden="true">·</span>
+                  <span>Quiet Study Pods</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-slate-900">Co-Curricular Clubs & Athletics</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -951,11 +1031,11 @@ export const SchoolPublicWebsite: React.FC<SchoolPublicWebsiteProps> = ({
                 tag: 'Community Service',
               },
             ].map((club, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 uppercase">
+              <div key={idx} className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs hover:border-slate-300 transition">
+                <div className="text-[11px] font-semibold text-emerald-700 tracking-wide uppercase mb-2">
                   {club.tag}
-                </span>
-                <h3 className="text-base font-bold text-slate-900 mt-3 mb-2">{club.title}</h3>
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">{club.title}</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">{club.desc}</p>
               </div>
             ))}
