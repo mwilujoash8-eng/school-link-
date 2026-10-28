@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" style="background-color: #020617; color: #f8fafc;">
+<html lang="en" style="background-color: #0b0f19; color: #f8fafc;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#020617" />
+    <meta name="theme-color" content="#0b0f19" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="SchoolLink" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,8 +17,14 @@
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="keywords" content="SchoolLink, school management, ECZ grading, student portal, teacher dashboard, head teacher, digital school operating system, Zambia schools" />
     <style>
+      :root {
+        --theme-bg: #0b0f19;
+        --theme-surface: #111827;
+        --theme-text: #f8fafc;
+        --theme-accent: #10b981;
+      }
       html, body {
-        background-color: #020617 !important;
+        background-color: #0b0f19 !important;
         color: #f8fafc !important;
         margin: 0;
         padding: 0;
@@ -47,19 +53,35 @@
       }
     </script>
     <script>
-      // Self-correct GitHub Pages sub-directory URL if missing trailing slash
+      // 1. Self-correct GitHub Pages sub-directory URL if missing trailing slash
       (function() {
         var path = window.location.pathname;
         if (path && !path.endsWith('/') && !path.split('/').pop().includes('.')) {
           window.location.replace(path + '/' + window.location.search + window.location.hash);
         }
       })();
+
+      // 2. SPA Route Restoration from static 404 redirect (?p=...)
+      (function() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var redirectPath = params.get('p');
+          if (redirectPath) {
+            var rawQuery = params.get('q');
+            var cleanQuery = rawQuery ? '?' + decodeURIComponent(rawQuery) : '';
+            var targetUrl = window.location.pathname.replace(/\/$/, '') + decodeURIComponent(redirectPath) + cleanQuery + window.location.hash;
+            window.history.replaceState(null, '', targetUrl);
+          }
+        } catch (e) {
+          console.warn('SPA route restore notice:', e);
+        }
+      })();
     </script>
   </head>
-  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
+  <body class="bg-[#0b0f19] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
     <noscript>
-      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #020617; color: #f8fafc; font-family: sans-serif; text-align: center; padding: 24px;">
-        <div style="max-width: 460px; background: #0f172a; padding: 32px; border-radius: 24px; border: 1px solid #1e293b;">
+      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0b0f19; color: #f8fafc; font-family: sans-serif; text-align: center; padding: 24px;">
+        <div style="max-width: 460px; background: #111827; padding: 32px; border-radius: 24px; border: 1px solid #1e293b;">
           <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 12px; color: #10b981;">SchoolLink Digital School Portal</h2>
           <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
             Please enable JavaScript in your browser settings to access the official SchoolLink website and educational portal.
@@ -68,7 +90,7 @@
       </div>
     </noscript>
     <div id="root">
-      <div id="schoollink-preloader" style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #020617; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 24px;">
+      <div id="schoollink-preloader" style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0b0f19; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 24px;">
         <div style="width: 58px; height: 58px; border-radius: 18px; background: linear-gradient(135deg, #059669, #0d9488); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4); margin-bottom: 18px;">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>

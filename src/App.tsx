@@ -48,8 +48,11 @@ const SchoolLinkAppContent: React.FC = () => {
   // Global Quantum Telemetry Search Modal State
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
 
-  // Global Cmd+K / Ctrl+K keyboard shortcut listener
+  // Global Cmd+K / Ctrl+K keyboard shortcut listener & environment configuration
   React.useEffect(() => {
+    if (import.meta.env.VITE_APP_TITLE) {
+      document.title = import.meta.env.VITE_APP_TITLE;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -107,7 +110,7 @@ const SchoolLinkAppContent: React.FC = () => {
   // Render Public School Website if active (available to guests and signed-in users)
   if (showWebsiteLanding) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-900 font-sans antialiased app-scroll-container">
+      <div className="min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased app-scroll-container">
         <DeviceSwitcherBanner />
         {isSmartphone && <AndroidStatusBar theme="dark" showPinholeCamera={false} />}
         <SchoolPublicWebsite
@@ -139,7 +142,7 @@ const SchoolLinkAppContent: React.FC = () => {
   // If not authenticated and not viewing website, show Login Portal
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-900 font-sans antialiased app-scroll-container">
+      <div className="min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased app-scroll-container">
         <DeviceSwitcherBanner />
         {isSmartphone && <AndroidStatusBar theme="dark" showPinholeCamera={false} />}
         <LoginPage
